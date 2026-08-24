@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026년 통합 출산/육아휴직 계산기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Custom scrollbar for table */
+        .table-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-blue-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold mb-2">👶 2026년 출산·육아휴직 계산기</h1>
+            <p class="text-blue-100 text-sm">최신 개정 정책(상한액 인상, 1년 6개월 연장 등) 완벽 반영</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-gray-200 text-sm font-medium">
+            <button id="tab-leave" onclick="switchTab('leave')" class="flex-1 py-4 text-center text-blue-600 border-b-2 border-blue-600 hover:bg-gray-50 transition-colors">출산휴가 기간</button>
+            <button id="tab-duration" onclick="switchTab('duration')" class="flex-1 py-4 text-center text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors">육아휴직 기간</button>
+            <button id="tab-pay" onclick="switchTab('pay')" class="flex-1 py-4 text-center text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors">육아휴직 급여</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-6">
+            <!-- 1. 출산휴가 날짜 계산 -->
+            <div id="section-leave" class="block space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">휴가 대상자</label>
+                    <div class="flex rounded-md shadow-sm" role="group">
+                        <button type="button" id="btn-mom" onclick="setLeaveType('mom')" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-blue-500 rounded-l-lg">엄마 (출산전후휴가)</button>
+                        <button type="button" id="btn-dad" onclick="setLeaveType('dad')" class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-50">아빠 (배우자 출산휴가)</button>
+                    </div>
+                </div>
+
+                <div id="mom-options" class="block">
+                    <label class="flex items-center space-x-2 text-sm text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="leave-twins" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+                        <span>다태아(쌍둥이) 출산입니다. (120일 적용)</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">휴가 시작일</label>
+                    <input type="date" id="leave-start" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <button onclick="calculateLeave()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">휴가 종료일 계산하기</button>
+
+                <div id="leave-error" class="hidden text-red-500 text-sm text-center mt-2"></div>
+
+                <div id="leave-result" class="hidden mt-4 p-5 bg-blue-50 rounded-xl text-center border border-blue-100">
+                    <p class="text-sm text-gray-600 mb-1">배정된 휴가 기간: <span id="leave-total-days" class="font-bold text-blue-700">90일</span></p>
+                    <p class="text-sm text-gray-500 mb-2">휴가 마지막 날(복귀 전날)은</p>
+                    <p id="leave-end-date" class="text-2xl font-bold text-gray-900"></p>
+                </div>
+            </div>
+
+            <!-- 2. 육아휴직 기간 계산 (1.5년 연장 확인) -->
+            <div id="section-duration" class="hidden space-y-5">
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    <p class="text-sm text-yellow-800 font-medium">💡 2025년 이후, 조건 충족 시 육아휴직이 최대 1년 6개월(18개월)로 연장됩니다.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block text-sm font-semibold text-gray-700">연장 조건 해당 여부 (해당 시 체크)</label>
+                    <label class="flex items-start space-x-3 text-sm text-gray-700 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+                        <input type="checkbox" id="cond-both" onchange="checkDuration()" class="mt-1 rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+                        <span>부모가 각각 3개월 이상 육아휴직을 사용함</span>
+                    </label>
+                    <label class="flex items-start space-x-3 text-sm text-gray-700 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+                        <input type="checkbox" id="cond-single" onchange="checkDuration()" class="mt-1 rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+                        <span>한부모 가정 근로자임</span>
+                    </label>
+                    <label class="flex items-start space-x-3 text-sm text-gray-700 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+                        <input type="checkbox" id="cond-disabled" onchange="checkDuration()" class="mt-1 rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+                        <span>중증 장애 아동의 부모임</span>
+                    </label>
+                </div>
+
+                <div class="mt-6 text-center p-6 bg-gray-50 rounded-xl border border-gray-200">
+                    <p class="text-sm text-gray-500 mb-2">사용 가능한 최대 육아휴직 기간</p>
+                    <p id="duration-result" class="text-3xl font-bold text-blue-600">12개월 (1년)</p>
+                </div>
+            </div>
+
+            <!-- 3. 육아휴직 급여 계산 -->
+            <div id="section-pay" class="hidden space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">월 통상임금 (세전)</label>
+                    <div class="relative">
+                        <input type="text" id="pay-salary" oninput="formatSalary(this)" placeholder="예: 3,000,000" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-right pr-10">
+                        <span class="absolute right-4 top-3.5 text-gray-500">원</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">사용 예정 기간</label>
+                    <select id="pay-months" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <!-- Options generated by JS -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">적용 제도 선택 (택 1)</label>
+                    <div class="grid grid-cols-1 gap-2">
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="pay-type" value="normal" checked class="text-blue-600 focus:ring-blue-500 w-4 h-4">
+                            <span class="ml-2 text-sm text-gray-700 font-medium">일반 육아휴직</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="pay-type" value="6plus6" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
+                            <span class="ml-2 text-sm text-gray-700 font-medium">6+6 부모 육아휴직제 <span class="text-xs text-gray-400 font-normal">(부모 동시/순차 사용)</span></span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="pay-type" value="single" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
+                            <span class="ml-2 text-sm text-gray-700 font-medium">한부모 육아휴직 특례</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="calculatePay()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">급여 모의계산하기</button>
+
+                <div id="pay-error" class="hidden text-red-500 text-sm text-center mt-2"></div>
+
+                <div id="pay-result" class="hidden mt-4">
+                    <div class="bg-blue-600 text-white p-4 rounded-t-xl flex justify-between items-center">
+                        <span class="font-medium">총 예상 수령액</span>
+                        <span id="pay-total-sum" class="text-xl font-bold">0원</span>
+                    </div>
+                    <div class="table-container max-h-60 overflow-y-auto border border-t-0 border-gray-200 rounded-b-xl">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-50 sticky top-0 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium text-gray-600">기간</th>
+                                    <th class="px-4 py-3 font-medium text-gray-600 text-right">상한액</th>
+                                    <th class="px-4 py-3 font-medium text-gray-600 text-right">예상 지급액</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pay-table-body" class="divide-y divide-gray-100 bg-white">
+                                <!-- JS Injected Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 text-center">* 25% 사후지급금 폐지가 반영된 2026년 기준 100% 지급액입니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Tab Management ---
+        function switchTab(tabName) {
+            // Reset styles
+            document.querySelectorAll('.border-b-2').forEach(el => {
+                el.classList.remove('border-blue-600', 'text-blue-600');
+                el.classList.add('text-gray-500');
+                el.classList.remove('border-b-2');
+            });
+            
+            // Hide all sections
+            document.getElementById('section-leave').classList.add('hidden');
+            document.getElementById('section-duration').classList.add('hidden');
+            document.getElementById('section-pay').classList.add('hidden');
+
+            // Show active section and tab
+            document.getElementById('tab-' + tabName).classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+            document.getElementById('tab-' + tabName).classList.remove('text-gray-500');
+            document.getElementById('section-' + tabName).classList.remove('hidden');
+            document.getElementById('section-' + tabName).classList.add('block');
+        }
+
+        // --- 1. Maternity/Paternity Leave Logic ---
+        let currentLeaveType = 'mom';
+
+        function setLeaveType(type) {
+            currentLeaveType = type;
+            const btnMom = document.getElementById('btn-mom');
+            const btnDad = document.getElementById('btn-dad');
+            const momOptions = document.getElementById('mom-options');
+
+            if (type === 'mom') {
+                btnMom.classList.replace('bg-white', 'bg-blue-500');
+                btnMom.classList.replace('text-gray-700', 'text-white');
+                btnMom.classList.remove('hover:bg-gray-50');
+                
+                btnDad.classList.replace('bg-blue-500', 'bg-white');
+                btnDad.classList.replace('text-white', 'text-gray-700');
+                btnDad.classList.add('hover:bg-gray-50');
+                
+                momOptions.classList.remove('hidden');
+            } else {
+                btnDad.classList.replace('bg-white', 'bg-blue-500');
+                btnDad.classList.replace('text-gray-700', 'text-white');
+                btnDad.classList.remove('hover:bg-gray-50');
+                
+                btnMom.classList.replace('bg-blue-500', 'bg-white');
+                btnMom.classList.replace('text-white', 'text-gray-700');
+                btnMom.classList.add('hover:bg-gray-50');
+                
+                momOptions.classList.add('hidden');
+            }
+        }
+
+        function calculateLeave() {
+            const startDateStr = document.getElementById('leave-start').value;
+            const errorDiv = document.getElementById('leave-error');
+            const resultDiv = document.getElementById('leave-result');
+            
+            errorDiv.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+
+            if (!startDateStr) {
+                errorDiv.innerText = "휴가 시작일을 선택해주세요.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const startDate = new Date(startDateStr);
+            let daysToSub = 1; // Since start date is Day 1
+            let totalDays = 90;
+
+            if (currentLeaveType === 'mom') {
+                const isTwins = document.getElementById('leave-twins').checked;
+                totalDays = isTwins ? 120 : 90;
+            } else {
+                totalDays = 20; // 아빠 출산휴가 20일 (2025년 개정)
+            }
+
+            document.getElementById('leave-total-days').innerText = totalDays + "일";
+
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + totalDays - daysToSub);
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+            document.getElementById('leave-end-date').innerText = endDate.toLocaleDateString('ko-KR', options);
+            
+            resultDiv.classList.remove('hidden');
+        }
+
+        // --- 2. Duration Logic ---
+        function checkDuration() {
+            const condBoth = document.getElementById('cond-both').checked;
+            const condSingle = document.getElementById('cond-single').checked;
+            const condDisabled = document.getElementById('cond-disabled').checked;
+
+            const durationText = document.getElementById('duration-result');
+            
+            // 하나라도 해당되면 1년 6개월(18개월)
+            if (condBoth || condSingle || condDisabled) {
+                durationText.innerText = "18개월 (1년 6개월)";
+                durationText.classList.replace('text-blue-600', 'text-green-600');
+                updatePayMonthOptions(18);
+            } else {
+                durationText.innerText = "12개월 (1년)";
+                durationText.classList.replace('text-green-600', 'text-blue-600');
+                updatePayMonthOptions(12);
+            }
+        }
+
+        // --- 3. Pay Logic ---
+        // Initialize Month options up to 18
+        function updatePayMonthOptions(maxMonths) {
+            const select = document.getElementById('pay-months');
+            const currentValue = select.value;
+            select.innerHTML = '';
+            for(let i=1; i<=maxMonths; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = i + "개월" + (i===12 ? " (1년)" : (i===18 ? " (1년 6개월)" : ""));
+                select.appendChild(opt);
+            }
+            if(currentValue && currentValue <= maxMonths) {
+                select.value = currentValue;
+            } else {
+                select.value = maxMonths > 12 ? 18 : 12; // default selection
+            }
+        }
+        
+        // Call initially
+        updatePayMonthOptions(12);
+
+        // Format salary input with commas
+        function formatSalary(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if(value) {
+                input.value = parseInt(value).toLocaleString('ko-KR');
+            } else {
+                input.value = '';
+            }
+        }
+
+        function calculatePay() {
+            const salaryInput = document.getElementById('pay-salary').value.replace(/[^0-9]/g, '');
+            const errorDiv = document.getElementById('pay-error');
+            const resultDiv = document.getElementById('pay-result');
+            
+            errorDiv.classList.add('hidden');
+            resultDiv.classList.add('hidden');
+
+            if (!salaryInput || parseInt(salaryInput) < 700000) {
+                errorDiv.innerText = "정확한 월 통상임금을 입력해주세요. (최소 700,000원 이상)";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const salary = parseInt(salaryInput);
+            const months = parseInt(document.getElementById('pay-months').value);
+            const payType = document.querySelector('input[name="pay-type"]:checked').value;
+            
+            const tbody = document.getElementById('pay-table-body');
+            tbody.innerHTML = '';
+            
+            let totalSum = 0;
+            const minPay = 700000;
+
+            for (let m = 1; m <= months; m++) {
+                let currentMax = 0;
+                let rate = 1.0; // 100% 
+
+                if (payType === 'normal') {
+                    if (m <= 3) { currentMax = 2500000; rate = 1.0; }
+                    else if (m <= 6) { currentMax = 2000000; rate = 1.0; }
+                    else { currentMax = 1600000; rate = 0.8; }
+                } 
+                else if (payType === 'single') {
+                    if (m <= 3) { currentMax = 3000000; rate = 1.0; }
+                    else if (m <= 6) { currentMax = 2000000; rate = 1.0; }
+                    else { currentMax = 1600000; rate = 0.8; }
+                }
+                else if (payType === '6plus6') {
+                    // 6+6 제도는 첫 6개월까지 상한액이 단계적으로 증가
+                    if (m === 1) { currentMax = 2000000; rate = 1.0; }
+                    else if (m === 2) { currentMax = 2500000; rate = 1.0; }
+                    else if (m === 3) { currentMax = 3000000; rate = 1.0; }
+                    else if (m === 4) { currentMax = 3500000; rate = 1.0; }
+                    else if (m === 5) { currentMax = 4000000; rate = 1.0; }
+                    else if (m === 6) { currentMax = 4500000; rate = 1.0; }
+                    else { currentMax = 1600000; rate = 0.8; } // 7개월부터 일반 제도와 동일
+                }
+
+                // 예상 지급액 계산
+                let expectedPay = Math.floor(salary * rate);
+                
+                // 상한액 및 하한액 적용
+                if (expectedPay > currentMax) expectedPay = currentMax;
+                if (expectedPay < minPay) expectedPay = minPay;
+
+                totalSum += expectedPay;
+
+                // 테이블 행 추가
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-800">${m}개월 차</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right text-gray-400 text-xs">최대 ${currentMax.toLocaleString()}원</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-blue-600">${expectedPay.toLocaleString()}원</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            document.getElementById('pay-total-sum').innerText = totalSum.toLocaleString() + '원';
+            resultDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
