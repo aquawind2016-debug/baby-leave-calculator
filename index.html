@@ -3,387 +3,523 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026년 통합 출산/육아휴직 계산기</title>
+    <title>2026 맞춤형 출산·육아휴직 플래너</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f3f4f6;
-        }
-        /* Custom scrollbar for table */
-        .table-container::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        /* Hide number input spinners */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
+        .timeline-line { position: absolute; left: 15px; top: 30px; bottom: 0; width: 2px; background-color: #e5e7eb; }
+        /* Chrome, Safari, Edge, Opera 숨김 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        /* Firefox 숨김 */
+        input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex items-center justify-center p-4">
+<body class="text-gray-800 antialiased min-h-screen p-4 md:p-8 flex justify-center">
 
-    <div class="w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden">
-        <!-- Header -->
+    <div class="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        <!-- 헤더 -->
         <div class="bg-blue-600 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold mb-2">👶 2026년 출산·육아휴직 계산기</h1>
-            <p class="text-blue-100 text-sm">최신 개정 정책(상한액 인상, 1년 6개월 연장 등) 완벽 반영</p>
+            <h1 class="text-2xl font-bold mb-2">2026년형 출산·육아휴직 통합 플래너</h1>
+            <p class="text-blue-100 text-sm">달라진 1년 6개월 연장법 및 6+6 제도를 완벽 반영했습니다.</p>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="flex border-b border-gray-200 text-sm font-medium">
-            <button id="tab-leave" onclick="switchTab('leave')" class="flex-1 py-4 text-center text-blue-600 border-b-2 border-blue-600 hover:bg-gray-50 transition-colors">출산휴가 기간</button>
-            <button id="tab-duration" onclick="switchTab('duration')" class="flex-1 py-4 text-center text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors">육아휴직 기간</button>
-            <button id="tab-pay" onclick="switchTab('pay')" class="flex-1 py-4 text-center text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors">육아휴직 급여</button>
-        </div>
-
-        <!-- Content Area -->
-        <div class="p-6">
-            <!-- 1. 출산휴가 날짜 계산 -->
-            <div id="section-leave" class="block space-y-5">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">휴가 대상자</label>
-                    <div class="flex rounded-md shadow-sm" role="group">
-                        <button type="button" id="btn-mom" onclick="setLeaveType('mom')" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-blue-500 rounded-l-lg">엄마 (출산전후휴가)</button>
-                        <button type="button" id="btn-dad" onclick="setLeaveType('dad')" class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-50">아빠 (배우자 출산휴가)</button>
+        <div class="p-6 space-y-8">
+            
+            <!-- STEP 1: 기본 정보 및 특례 요건 -->
+            <section>
+                <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700">
+                    <i class="ri-user-settings-line mr-2"></i> 1. 기본 조건 설정
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">임금 및 자녀</label>
+                        <input type="number" id="salary" placeholder="월 통상임금 (예: 3000000)" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex flex-col justify-center gap-2 mt-1 md:mt-6">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="isTwins" class="w-5 h-5 text-blue-600 rounded" onchange="updateMaxMatDays()">
+                            <span class="text-sm font-medium">다태아(쌍둥이) 임신 (출산휴가 120일)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="isSingleParent" class="w-5 h-5 text-blue-600 rounded">
+                            <span class="text-sm font-medium">한부모 가정 특례</span>
+                        </label>
                     </div>
                 </div>
 
-                <div id="mom-options" class="block">
-                    <label class="flex items-center space-x-2 text-sm text-gray-700 cursor-pointer">
-                        <input type="checkbox" id="leave-twins" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span>다태아(쌍둥이) 출산입니다. (120일 적용)</span>
+                <div class="mt-4 p-4 bg-gray-50 border rounded-lg">
+                    <p class="text-sm font-bold text-gray-700 mb-2">👨‍👩‍👧 배우자(남편) 육아휴직 연계 혜택</p>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="spouse3Months" class="w-5 h-5 text-blue-600 rounded">
+                            <span class="text-sm text-gray-700">배우자가 육아휴직을 <b>3개월 이상</b> 사용함 (또는 할 예정)</span>
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-2">1년 6개월 연장 가능</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="is6plus6" class="w-5 h-5 text-blue-600 rounded">
+                            <span class="text-sm text-gray-700">배우자와 겹치거나 이어서 쓰는 <b>'6+6 부모 육아휴직제'</b> 적용 대상</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 2: 출산휴가 일정 (분할 가능) -->
+            <section>
+                <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700 justify-between">
+                    <span><i class="ri-calendar-event-line mr-2"></i> 2. 출산전후휴가 일정</span>
+                    <span class="text-sm font-normal text-gray-600 bg-gray-100 px-2 py-1 rounded">최대 <span id="maxMatDaysDisplay" class="font-bold text-blue-600">90</span>일</span>
+                </h2>
+                
+                <div id="matLeaveContainer" class="space-y-3">
+                    <!-- 분할 항목들이 여기에 추가됩니다 -->
+                </div>
+                
+                <div class="flex justify-between items-center mt-3">
+                    <button onclick="addMatLeaveRow()" class="text-sm text-blue-600 font-semibold hover:text-blue-800 flex items-center">
+                        <i class="ri-add-circle-line mr-1"></i> 휴가 분할 추가
+                    </button>
+                    <div class="text-sm font-medium">
+                        총 사용: <span id="totalMatDaysUsed" class="text-pink-600 font-bold">0</span>일 / 남은 일수: <span id="remainingMatDays" class="text-green-600 font-bold">90</span>일
+                    </div>
+                </div>
+                
+                <p class="text-xs text-gray-500 mt-3">
+                    * 분할 사용 시 마지막 기간의 '종료일'은 남은 출산휴가 일수에 맞춰 자동으로 계산됩니다.<br>
+                    * 출산 후의 휴가 기간이 반드시 45일(다태아 60일) 이상 되어야 합니다.
+                </p>
+            </section>
+
+            <!-- STEP 3: 육아휴직 일정 (최대치 자동) -->
+            <section>
+                <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700">
+                    <i class="ri-baby-carriage-line mr-2"></i> 3. 육아휴직 일정 (자동 최대치 연계)
+                </h2>
+                
+                <div class="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="linkLeave" class="w-5 h-5 text-blue-600 rounded" onchange="syncParentalStart()" checked>
+                        <span class="text-sm font-medium text-blue-800">마지막 출산휴가 종료 다음 날부터 연달아 육아휴직 시작</span>
                     </label>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">휴가 시작일</label>
-                    <input type="date" id="leave-start" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">육아휴직 시작일</label>
+                        <input type="date" id="parStartDate" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-100" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">육아휴직 사용 (최대치 자동 적용)</label>
+                        <div class="w-full p-3 border rounded-lg bg-gray-100 text-gray-700 flex justify-between items-center">
+                            <span id="parMaxMonthsDisplay">12개월 (1년)</span>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" id="useParentalLeave" class="w-4 h-4 text-blue-600 rounded" checked>
+                                <span class="text-xs font-semibold">사용</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">※ '배우자 3개월 이상 사용' 등 특례 조건에 따라 자동 연장됩니다.</p>
+                    </div>
                 </div>
+            </section>
 
-                <button onclick="calculateLeave()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">휴가 종료일 계산하기</button>
+            <!-- 계산 버튼 -->
+            <button onclick="calculateAll()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition duration-200 text-lg mt-6">
+                나의 맞춤형 휴가 플랜 생성하기
+            </button>
 
-                <div id="leave-error" class="hidden text-red-500 text-sm text-center mt-2"></div>
-
-                <div id="leave-result" class="hidden mt-4 p-5 bg-blue-50 rounded-xl text-center border border-blue-100">
-                    <p class="text-sm text-gray-600 mb-1">배정된 휴가 기간: <span id="leave-total-days" class="font-bold text-blue-700">90일</span></p>
-                    <p class="text-sm text-gray-500 mb-2">휴가 마지막 날(복귀 전날)은</p>
-                    <p id="leave-end-date" class="text-2xl font-bold text-gray-900"></p>
-                </div>
-            </div>
-
-            <!-- 2. 육아휴직 기간 계산 (1.5년 연장 확인) -->
-            <div id="section-duration" class="hidden space-y-5">
-                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                    <p class="text-sm text-yellow-800 font-medium">💡 2025년 이후, 조건 충족 시 육아휴직이 최대 1년 6개월(18개월)로 연장됩니다.</p>
-                </div>
-
-                <div class="space-y-3">
-                    <label class="block text-sm font-semibold text-gray-700">연장 조건 해당 여부 (해당 시 체크)</label>
-                    <label class="flex items-start space-x-3 text-sm text-gray-700 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" id="cond-both" onchange="checkDuration()" class="mt-1 rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span>부모가 각각 3개월 이상 육아휴직을 사용함</span>
-                    </label>
-                    <label class="flex items-start space-x-3 text-sm text-gray-700 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" id="cond-single" onchange="checkDuration()" class="mt-1 rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span>한부모 가정 근로자임</span>
-                    </label>
-                    <label class="flex items-start space-x-3 text-sm text-gray-700 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
-                        <input type="checkbox" id="cond-disabled" onchange="checkDuration()" class="mt-1 rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span>중증 장애 아동의 부모임</span>
-                    </label>
-                </div>
-
-                <div class="mt-6 text-center p-6 bg-gray-50 rounded-xl border border-gray-200">
-                    <p class="text-sm text-gray-500 mb-2">사용 가능한 최대 육아휴직 기간</p>
-                    <p id="duration-result" class="text-3xl font-bold text-blue-600">12개월 (1년)</p>
-                </div>
-            </div>
-
-            <!-- 3. 육아휴직 급여 계산 -->
-            <div id="section-pay" class="hidden space-y-5">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">월 통상임금 (세전)</label>
+            <!-- 결과 영역 (수정 안함) -->
+            <section id="resultSection" class="hidden mt-8 border-t-2 border-dashed border-gray-300 pt-8">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">🗓️ 나의 휴가 타임라인</h2>
+                
+                <div class="relative pl-8 space-y-6 mb-8">
+                    <div class="timeline-line"></div>
+                    
                     <div class="relative">
-                        <input type="text" id="pay-salary" oninput="formatSalary(this)" placeholder="예: 3,000,000" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-right pr-10">
-                        <span class="absolute right-4 top-3.5 text-gray-500">원</span>
+                        <div class="absolute -left-10 bg-pink-500 w-6 h-6 rounded-full border-4 border-white shadow"></div>
+                        <h3 class="text-lg font-bold text-pink-600">출산전후휴가 (총 <span id="resMatDays">90</span>일)</h3>
+                        <div id="resMatDatesList" class="mt-2 space-y-1">
+                            <!-- 분할 일정들이 여기에 표시됨 -->
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">급여: 통상임금 100% (상한 220만원)</p>
+                    </div>
+
+                    <div id="parResultNode" class="relative">
+                        <div class="absolute -left-10 bg-blue-500 w-6 h-6 rounded-full border-4 border-white shadow"></div>
+                        <h3 class="text-lg font-bold text-blue-600">육아휴직 (<span id="resParMonths">0</span>개월)</h3>
+                        <p class="text-gray-600 font-medium" id="resParDates">YYYY.MM.DD ~ YYYY.MM.DD</p>
+                        
+                        <div class="mt-4 overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-blue-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left font-semibold text-gray-700">구분 (기간)</th>
+                                        <th class="px-4 py-2 text-right font-semibold text-gray-700">예상 월 지급액</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="payTableBody" class="divide-y divide-gray-100 bg-white">
+                                </tbody>
+                                <tfoot class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-bold text-gray-900">육아휴직 급여 총액</th>
+                                        <th class="px-4 py-3 text-right font-bold text-blue-600 text-lg" id="resTotalPay">0 원</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">* 2025년 사후지급금 폐지 반영 완료 (전액 매월 지급). 실제 지급액은 고용센터 심사결과에 따라 다를 수 있습니다.</p>
+                    </div>
+                    
+                    <div class="relative">
+                        <div class="absolute -left-10 bg-green-500 w-6 h-6 rounded-full border-4 border-white shadow"></div>
+                        <h3 class="text-lg font-bold text-green-600">🎉 복직 (휴가 종료)</h3>
+                        <p class="text-gray-600 font-medium" id="resReturnDate">YYYY.MM.DD</p>
                     </div>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">사용 예정 기간</label>
-                    <select id="pay-months" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <!-- Options generated by JS -->
-                    </select>
+                
+                <div class="flex justify-center mt-6">
+                    <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg shadow transition">
+                        <i class="ri-printer-line mr-1"></i> 플랜 인쇄/PDF 저장
+                    </button>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">적용 제도 선택 (택 1)</label>
-                    <div class="grid grid-cols-1 gap-2">
-                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="pay-type" value="normal" checked class="text-blue-600 focus:ring-blue-500 w-4 h-4">
-                            <span class="ml-2 text-sm text-gray-700 font-medium">일반 육아휴직</span>
-                        </label>
-                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="pay-type" value="6plus6" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
-                            <span class="ml-2 text-sm text-gray-700 font-medium">6+6 부모 육아휴직제 <span class="text-xs text-gray-400 font-normal">(부모 동시/순차 사용)</span></span>
-                        </label>
-                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="pay-type" value="single" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
-                            <span class="ml-2 text-sm text-gray-700 font-medium">한부모 육아휴직 특례</span>
-                        </label>
-                    </div>
-                </div>
-
-                <button onclick="calculatePay()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-colors">급여 모의계산하기</button>
-
-                <div id="pay-error" class="hidden text-red-500 text-sm text-center mt-2"></div>
-
-                <div id="pay-result" class="hidden mt-4">
-                    <div class="bg-blue-600 text-white p-4 rounded-t-xl flex justify-between items-center">
-                        <span class="font-medium">총 예상 수령액</span>
-                        <span id="pay-total-sum" class="text-xl font-bold">0원</span>
-                    </div>
-                    <div class="table-container max-h-60 overflow-y-auto border border-t-0 border-gray-200 rounded-b-xl">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 sticky top-0 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-4 py-3 font-medium text-gray-600">기간</th>
-                                    <th class="px-4 py-3 font-medium text-gray-600 text-right">상한액</th>
-                                    <th class="px-4 py-3 font-medium text-gray-600 text-right">예상 지급액</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pay-table-body" class="divide-y divide-gray-100 bg-white">
-                                <!-- JS Injected Rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2 text-center">* 25% 사후지급금 폐지가 반영된 2026년 기준 100% 지급액입니다.</p>
-                </div>
-            </div>
+            </section>
         </div>
     </div>
 
     <script>
-        // --- Tab Management ---
-        function switchTab(tabName) {
-            // Reset styles
-            document.querySelectorAll('.border-b-2').forEach(el => {
-                el.classList.remove('border-blue-600', 'text-blue-600');
-                el.classList.add('text-gray-500');
-                el.classList.remove('border-b-2');
+        // 전역 변수: 현재 최대 출산휴가 일수
+        let MAX_MAT_DAYS = 90;
+        let matLeaveCount = 0;
+
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}.${m}.${d}`;
+        }
+
+        function calculateDaysBetween(startStr, endStr) {
+            if (!startStr || !endStr) return 0;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            if (end < start) return -1; // 에러 케이스 (종료일이 시작일보다 빠름)
+            const diffTime = Math.abs(end - start);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // 시작일 포함
+        }
+
+        function updateMaxMatDays() {
+            MAX_MAT_DAYS = document.getElementById('isTwins').checked ? 120 : 90;
+            document.getElementById('maxMatDaysDisplay').innerText = MAX_MAT_DAYS;
+            calculateMatDays();
+        }
+
+        // 휴가 분할 행 추가
+        function addMatLeaveRow(isInitial = false) {
+            matLeaveCount++;
+            const container = document.getElementById('matLeaveContainer');
+            
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-2 bg-white p-2 border rounded-lg shadow-sm relative mat-row';
+            row.id = `matRow_${matLeaveCount}`;
+            
+            // 마지막 행인지 확인 (자동 계산을 위해)
+            const isLast = !isInitial && matLeaveCount > 1;
+
+            row.innerHTML = `
+                <div class="flex-1">
+                    <label class="text-xs text-gray-500 mb-1 block">시작일</label>
+                    <input type="date" class="w-full p-2 text-sm border rounded outline-none mat-start" onchange="calculateMatDays()">
+                </div>
+                <div class="text-gray-400 mt-5">~</div>
+                <div class="flex-1">
+                    <label class="text-xs text-gray-500 mb-1 block">종료일</label>
+                    <input type="date" class="w-full p-2 text-sm border rounded outline-none mat-end" onchange="calculateMatDays()">
+                </div>
+                <div class="w-16 text-center mt-5">
+                    <span class="text-sm font-bold text-blue-600 mat-days-display">0</span><span class="text-xs text-gray-500">일</span>
+                </div>
+                ${matLeaveCount > 1 ? `<button onclick="removeMatLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200"><i class="ri-close-line"></i></button>` : ''}
+            `;
+            container.appendChild(row);
+            
+            // 행 추가 시 남은 일수가 있으면 마지막 행의 종료일 입력창을 리드온리로 만들거나 스타일 변경(옵션)
+            calculateMatDays();
+        }
+
+        function removeMatLeaveRow(rowId) {
+            document.getElementById(rowId).remove();
+            calculateMatDays();
+        }
+
+        // 출산휴가 일수 계산 및 마지막 종료일 자동 채우기 핵심 로직
+        function calculateMatDays() {
+            const rows = document.querySelectorAll('.mat-row');
+            let totalUsed = 0;
+
+            rows.forEach((row, index) => {
+                const startInput = row.querySelector('.mat-start');
+                const endInput = row.querySelector('.mat-end');
+                const display = row.querySelector('.mat-days-display');
+                
+                // 마지막 행인지 확인
+                const isLastRow = index === rows.length - 1;
+
+                if (startInput.value) {
+                    if (!isLastRow || endInput.value) {
+                        // 일반적인 경우 또는 마지막행인데 사용자가 수동입력한 경우
+                        const days = calculateDaysBetween(startInput.value, endInput.value);
+                        if(days > 0) {
+                            display.innerText = days;
+                            totalUsed += days;
+                        } else {
+                            display.innerText = 0;
+                        }
+                    } else if (isLastRow && !endInput.value) {
+                         // ★ 마지막 행이고 종료일이 비어있으면 남은 일수로 자동 계산
+                         const remainingForLast = MAX_MAT_DAYS - totalUsed;
+                         if (remainingForLast > 0) {
+                             const start = new Date(startInput.value);
+                             const end = new Date(start);
+                             end.setDate(start.getDate() + remainingForLast - 1);
+                             
+                             // YYYY-MM-DD
+                             const y = end.getFullYear();
+                             const m = String(end.getMonth() + 1).padStart(2, '0');
+                             const d = String(end.getDate()).padStart(2, '0');
+                             
+                             endInput.value = `${y}-${m}-${d}`;
+                             display.innerText = remainingForLast;
+                             totalUsed += remainingForLast;
+                         } else {
+                             display.innerText = 0;
+                         }
+                    }
+                } else {
+                    display.innerText = 0;
+                }
             });
-            
-            // Hide all sections
-            document.getElementById('section-leave').classList.add('hidden');
-            document.getElementById('section-duration').classList.add('hidden');
-            document.getElementById('section-pay').classList.add('hidden');
 
-            // Show active section and tab
-            document.getElementById('tab-' + tabName).classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
-            document.getElementById('tab-' + tabName).classList.remove('text-gray-500');
-            document.getElementById('section-' + tabName).classList.remove('hidden');
-            document.getElementById('section-' + tabName).classList.add('block');
+            document.getElementById('totalMatDaysUsed').innerText = totalUsed;
+            const remaining = MAX_MAT_DAYS - totalUsed;
+            document.getElementById('remainingMatDays').innerText = remaining;
+            
+            // 남은 일수 색상 경고
+            const remainEl = document.getElementById('remainingMatDays');
+            if(remaining < 0) {
+                remainEl.className = 'text-red-600 font-bold';
+            } else if (remaining === 0) {
+                remainEl.className = 'text-gray-500 font-bold';
+            } else {
+                remainEl.className = 'text-green-600 font-bold';
+            }
+
+            syncParentalStart();
         }
 
-        // --- 1. Maternity/Paternity Leave Logic ---
-        let currentLeaveType = 'mom';
+        // 육아휴직 최대 개월수 반환 (배우자/한부모 특례 반영)
+        function getMaxParMonths() {
+            const isSpouse3M = document.getElementById('spouse3Months').checked;
+            const isSingleParent = document.getElementById('isSingleParent').checked;
+            return (isSpouse3M || isSingleParent) ? 18 : 12;
+        }
 
-        function setLeaveType(type) {
-            currentLeaveType = type;
-            const btnMom = document.getElementById('btn-mom');
-            const btnDad = document.getElementById('btn-dad');
-            const momOptions = document.getElementById('mom-options');
+        // 육아휴직 디스플레이 업데이트 이벤트 리스너 추가
+        function updateParDisplay() {
+            const maxMonths = getMaxParMonths();
+            const displayStr = maxMonths === 18 ? '18개월 (특례 연장)' : '12개월 (1년)';
+            document.getElementById('parMaxMonthsDisplay').innerText = displayStr;
+            syncParentalStart();
+        }
 
-            if (type === 'mom') {
-                btnMom.classList.replace('bg-white', 'bg-blue-500');
-                btnMom.classList.replace('text-gray-700', 'text-white');
-                btnMom.classList.remove('hover:bg-gray-50');
+        document.getElementById('spouse3Months').addEventListener('change', updateParDisplay);
+        document.getElementById('isSingleParent').addEventListener('change', updateParDisplay);
+
+        // 출산휴가에 이어서 쓰기 연동 (마지막 출산휴가 종료일 기준)
+        function syncParentalStart() {
+            const linkLeave = document.getElementById('linkLeave').checked;
+            const parStartDateInput = document.getElementById('parStartDate');
+            
+            if (linkLeave) {
+                parStartDateInput.readOnly = true;
+                parStartDateInput.classList.add('bg-gray-100');
                 
-                btnDad.classList.replace('bg-blue-500', 'bg-white');
-                btnDad.classList.replace('text-white', 'text-gray-700');
-                btnDad.classList.add('hover:bg-gray-50');
-                
-                momOptions.classList.remove('hidden');
-            } else {
-                btnDad.classList.replace('bg-white', 'bg-blue-500');
-                btnDad.classList.replace('text-gray-700', 'text-white');
-                btnDad.classList.remove('hover:bg-gray-50');
-                
-                btnMom.classList.replace('bg-blue-500', 'bg-white');
-                btnMom.classList.replace('text-white', 'text-gray-700');
-                btnMom.classList.add('hover:bg-gray-50');
-                
-                momOptions.classList.add('hidden');
-            }
-        }
-
-        function calculateLeave() {
-            const startDateStr = document.getElementById('leave-start').value;
-            const errorDiv = document.getElementById('leave-error');
-            const resultDiv = document.getElementById('leave-result');
-            
-            errorDiv.classList.add('hidden');
-            resultDiv.classList.add('hidden');
-
-            if (!startDateStr) {
-                errorDiv.innerText = "휴가 시작일을 선택해주세요.";
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            const startDate = new Date(startDateStr);
-            let daysToSub = 1; // Since start date is Day 1
-            let totalDays = 90;
-
-            if (currentLeaveType === 'mom') {
-                const isTwins = document.getElementById('leave-twins').checked;
-                totalDays = isTwins ? 120 : 90;
-            } else {
-                totalDays = 20; // 아빠 출산휴가 20일 (2025년 개정)
-            }
-
-            document.getElementById('leave-total-days').innerText = totalDays + "일";
-
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + totalDays - daysToSub);
-
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
-            document.getElementById('leave-end-date').innerText = endDate.toLocaleDateString('ko-KR', options);
-            
-            resultDiv.classList.remove('hidden');
-        }
-
-        // --- 2. Duration Logic ---
-        function checkDuration() {
-            const condBoth = document.getElementById('cond-both').checked;
-            const condSingle = document.getElementById('cond-single').checked;
-            const condDisabled = document.getElementById('cond-disabled').checked;
-
-            const durationText = document.getElementById('duration-result');
-            
-            // 하나라도 해당되면 1년 6개월(18개월)
-            if (condBoth || condSingle || condDisabled) {
-                durationText.innerText = "18개월 (1년 6개월)";
-                durationText.classList.replace('text-blue-600', 'text-green-600');
-                updatePayMonthOptions(18);
-            } else {
-                durationText.innerText = "12개월 (1년)";
-                durationText.classList.replace('text-green-600', 'text-blue-600');
-                updatePayMonthOptions(12);
-            }
-        }
-
-        // --- 3. Pay Logic ---
-        // Initialize Month options up to 18
-        function updatePayMonthOptions(maxMonths) {
-            const select = document.getElementById('pay-months');
-            const currentValue = select.value;
-            select.innerHTML = '';
-            for(let i=1; i<=maxMonths; i++) {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.innerText = i + "개월" + (i===12 ? " (1년)" : (i===18 ? " (1년 6개월)" : ""));
-                select.appendChild(opt);
-            }
-            if(currentValue && currentValue <= maxMonths) {
-                select.value = currentValue;
-            } else {
-                select.value = maxMonths > 12 ? 18 : 12; // default selection
-            }
-        }
-        
-        // Call initially
-        updatePayMonthOptions(12);
-
-        // Format salary input with commas
-        function formatSalary(input) {
-            let value = input.value.replace(/[^0-9]/g, '');
-            if(value) {
-                input.value = parseInt(value).toLocaleString('ko-KR');
-            } else {
-                input.value = '';
-            }
-        }
-
-        function calculatePay() {
-            const salaryInput = document.getElementById('pay-salary').value.replace(/[^0-9]/g, '');
-            const errorDiv = document.getElementById('pay-error');
-            const resultDiv = document.getElementById('pay-result');
-            
-            errorDiv.classList.add('hidden');
-            resultDiv.classList.add('hidden');
-
-            if (!salaryInput || parseInt(salaryInput) < 700000) {
-                errorDiv.innerText = "정확한 월 통상임금을 입력해주세요. (최소 700,000원 이상)";
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            const salary = parseInt(salaryInput);
-            const months = parseInt(document.getElementById('pay-months').value);
-            const payType = document.querySelector('input[name="pay-type"]:checked').value;
-            
-            const tbody = document.getElementById('pay-table-body');
-            tbody.innerHTML = '';
-            
-            let totalSum = 0;
-            const minPay = 700000;
-
-            for (let m = 1; m <= months; m++) {
-                let currentMax = 0;
-                let rate = 1.0; // 100% 
-
-                if (payType === 'normal') {
-                    if (m <= 3) { currentMax = 2500000; rate = 1.0; }
-                    else if (m <= 6) { currentMax = 2000000; rate = 1.0; }
-                    else { currentMax = 1600000; rate = 0.8; }
-                } 
-                else if (payType === 'single') {
-                    if (m <= 3) { currentMax = 3000000; rate = 1.0; }
-                    else if (m <= 6) { currentMax = 2000000; rate = 1.0; }
-                    else { currentMax = 1600000; rate = 0.8; }
+                const rows = document.querySelectorAll('.mat-row');
+                if(rows.length > 0) {
+                    // 가장 마지막 분할의 종료일 찾기
+                    const lastRow = rows[rows.length - 1];
+                    const lastEnd = lastRow.querySelector('.mat-end').value;
+                    
+                    if (lastEnd) {
+                        const endDate = new Date(lastEnd);
+                        const parStart = new Date(endDate);
+                        parStart.setDate(endDate.getDate() + 1); // 다음날
+                        
+                        const y = parStart.getFullYear();
+                        const m = String(parStart.getMonth() + 1).padStart(2, '0');
+                        const d = String(parStart.getDate()).padStart(2, '0');
+                        parStartDateInput.value = `${y}-${m}-${d}`;
+                    } else {
+                        parStartDateInput.value = '';
+                    }
+                } else {
+                    parStartDateInput.value = '';
                 }
-                else if (payType === '6plus6') {
-                    // 6+6 제도는 첫 6개월까지 상한액이 단계적으로 증가
-                    if (m === 1) { currentMax = 2000000; rate = 1.0; }
-                    else if (m === 2) { currentMax = 2500000; rate = 1.0; }
-                    else if (m === 3) { currentMax = 3000000; rate = 1.0; }
-                    else if (m === 4) { currentMax = 3500000; rate = 1.0; }
-                    else if (m === 5) { currentMax = 4000000; rate = 1.0; }
-                    else if (m === 6) { currentMax = 4500000; rate = 1.0; }
-                    else { currentMax = 1600000; rate = 0.8; } // 7개월부터 일반 제도와 동일
+            } else {
+                parStartDateInput.readOnly = false;
+                parStartDateInput.classList.remove('bg-gray-100');
+            }
+        }
+
+        document.getElementById('linkLeave').addEventListener('change', syncParentalStart);
+
+        function calcPayTable(salary, months, is6plus6, isSingle) {
+            let totalPay = 0;
+            let rows = '';
+
+            for (let i = 1; i <= months; i++) {
+                let amount = 0;
+                let cap = 0;
+                let rate = 1.0;
+                let ruleDesc = '';
+
+                if (is6plus6 && i <= 6) {
+                    const caps = [2000000, 2500000, 3000000, 3500000, 4000000, 4500000];
+                    cap = caps[i-1];
+                    rate = 1.0;
+                    ruleDesc = '6+6 제도 (100%)';
+                } else if (isSingle) {
+                    if (i <= 3) { cap = 3000000; rate = 1.0; ruleDesc = '한부모 첫3달 (100%)';}
+                    else if (i <= 6) { cap = 2000000; rate = 1.0; ruleDesc = '한부모 4~6달 (100%)';}
+                    else { cap = 1600000; rate = 0.8; ruleDesc = '통상 (80%)';}
+                } else {
+                    if (i <= 3) { cap = 2500000; rate = 1.0; ruleDesc = '첫3달 (100%)';}
+                    else if (i <= 6) { cap = 2000000; rate = 1.0; ruleDesc = '4~6달 (100%)';}
+                    else { cap = 1600000; rate = 0.8; ruleDesc = '통상 (80%)';}
                 }
 
-                // 예상 지급액 계산
-                let expectedPay = Math.floor(salary * rate);
+                amount = Math.min(salary * rate, cap);
+                amount = Math.max(amount, 700000); 
                 
-                // 상한액 및 하한액 적용
-                if (expectedPay > currentMax) expectedPay = currentMax;
-                if (expectedPay < minPay) expectedPay = minPay;
-
-                totalSum += expectedPay;
-
-                // 테이블 행 추가
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-4 py-3 whitespace-nowrap text-gray-800">${m}개월 차</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-right text-gray-400 text-xs">최대 ${currentMax.toLocaleString()}원</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-blue-600">${expectedPay.toLocaleString()}원</td>
+                totalPay += amount;
+                rows += `
+                    <tr>
+                        <td class="px-4 py-2 text-gray-700">${i}개월 차 <span class="text-xs text-gray-400 ml-1">(${ruleDesc})</span></td>
+                        <td class="px-4 py-2 text-right font-medium text-gray-900">${amount.toLocaleString()} 원</td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
+            }
+            return { totalPay, rows };
+        }
+
+        function calculateAll() {
+            const salaryInput = document.getElementById('salary').value;
+            const salary = parseInt(salaryInput || 0);
+            
+            if (!salary || salary < 700000) {
+                alert('정확한 월 통상임금을 입력해주세요. (최소 70만원 이상)');
+                return;
             }
 
-            document.getElementById('pay-total-sum').innerText = totalSum.toLocaleString() + '원';
-            resultDiv.classList.remove('hidden');
+            // 1. 출산휴가 검증 및 데이터 수집
+            const matRows = document.querySelectorAll('.mat-row');
+            let totalMatDays = 0;
+            let matPeriodsHTML = '';
+            let finalMatEndDate = null;
+
+            if (matRows.length === 0) {
+                alert('출산휴가 일정을 입력해주세요.'); return;
+            }
+
+            let hasError = false;
+            matRows.forEach((row, i) => {
+                const start = row.querySelector('.mat-start').value;
+                const end = row.querySelector('.mat-end').value;
+                if(!start || !end) {
+                    hasError = true; return;
+                }
+                const startDt = new Date(start);
+                const endDt = new Date(end);
+                
+                if (endDt < startDt) {
+                    alert(`${i+1}번째 분할의 종료일이 시작일보다 빠릅니다.`);
+                    hasError = true; return;
+                }
+
+                const days = calculateDaysBetween(start, end);
+                totalMatDays += days;
+                matPeriodsHTML += `<p class="text-gray-600 font-medium text-sm"><span class="inline-block w-4">${i+1}.</span> ${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-pink-500 font-bold ml-1">(${days}일)</span></p>`;
+                
+                if(i === matRows.length - 1) {
+                    finalMatEndDate = endDt;
+                }
+            });
+
+            if (hasError) return;
+
+            if (totalMatDays !== MAX_MAT_DAYS) {
+                if(!confirm(`입력하신 출산휴가 총 일수(${totalMatDays}일)가 법정 일수(${MAX_MAT_DAYS}일)와 다릅니다.\n그래도 계산하시겠습니까?`)) {
+                    return;
+                }
+            }
+
+            document.getElementById('resMatDays').innerText = totalMatDays;
+            document.getElementById('resMatDatesList').innerHTML = matPeriodsHTML;
+
+            let returnDate = new Date(finalMatEndDate);
+            returnDate.setDate(returnDate.getDate() + 1);
+
+            // 2. 육아휴직 계산
+            const parNode = document.getElementById('parResultNode');
+            const useParLeave = document.getElementById('useParentalLeave').checked;
+            
+            if (useParLeave) {
+                const parStartInput = document.getElementById('parStartDate').value;
+                if (!parStartInput) {
+                    alert('육아휴직 시작일을 확인해주세요.'); return;
+                }
+                
+                const parMonths = getMaxParMonths();
+                parNode.style.display = 'block';
+                
+                const parStart = new Date(parStartInput);
+                const parEnd = new Date(parStart);
+                parEnd.setMonth(parEnd.getMonth() + parMonths);
+                parEnd.setDate(parEnd.getDate() - 1); 
+
+                document.getElementById('resParMonths').innerText = parMonths;
+                document.getElementById('resParDates').innerText = `${formatDate(parStart)} ~ ${formatDate(parEnd)}`;
+
+                // 급여
+                const is6plus6 = document.getElementById('is6plus6').checked;
+                const isSingle = document.getElementById('isSingleParent').checked;
+                const payResult = calcPayTable(salary, parMonths, is6plus6, isSingle);
+                
+                document.getElementById('payTableBody').innerHTML = payResult.rows;
+                document.getElementById('resTotalPay').innerText = `${payResult.totalPay.toLocaleString()} 원`;
+                
+                returnDate = new Date(parEnd);
+                returnDate.setDate(returnDate.getDate() + 1);
+            } else {
+                parNode.style.display = 'none';
+            }
+
+            // 3. 복직일
+            document.getElementById('resReturnDate').innerText = formatDate(returnDate);
+
+            // 결과 보이기
+            document.getElementById('resultSection').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
         }
+
+        // 초기화
+        window.onload = () => {
+            updateMaxMatDays();
+            addMatLeaveRow(true); // 첫 번째 행 기본 추가
+        };
     </script>
 </body>
 </html>
