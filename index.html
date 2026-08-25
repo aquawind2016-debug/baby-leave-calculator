@@ -259,7 +259,6 @@
         let parLeaveCount = 0;
         let prenatalParLeaveCount = 0;
 
-        // 정책별 상세 설명 데이터 (별표 표시 제거 완료)
         const policyData = {
             twin: {
                 title: "다태아(쌍둥이) 임신 출산휴가 특례",
@@ -377,7 +376,6 @@
             calculateMatLeave();
         }
 
-        // --- 출산휴가 로직 ---
         function updateMaxMatDays() {
             MAX_MAT_DAYS = document.getElementById('isTwins').checked ? 120 : 90;
             document.getElementById('maxMatDaysDisplay').innerText = MAX_MAT_DAYS;
@@ -443,7 +441,6 @@
             syncParentalStart();
         }
 
-        // --- 육아휴직 로직 ---
         function getMaxParMonths() {
             const isSpouse3M = document.getElementById('spouse3Months').checked;
             const isSingleParent = document.getElementById('isSingleParent').checked;
@@ -552,7 +549,6 @@
             row.innerHTML = `
                 <div class="flex-1">
                     <label class="text-xs text-gray-500 mb-1 block">시작일</label>
-                    <!-- linkLeave가 체크되어 있고 첫 번째 행인 경우 readonly 적용 -->
                     <input type="date" class="w-full p-2 text-sm border rounded outline-none par-start ${parLeaveCount === 1 && document.getElementById('linkLeave').checked ? 'bg-gray-100' : ''}" onchange="calculateParDays(this)" value="${defaultStart}" ${parLeaveCount === 1 && document.getElementById('linkLeave').checked ? 'readonly' : ''}>
                 </div>
                 <div class="text-gray-400 mt-5">~</div>
@@ -719,7 +715,6 @@
             }
         }
 
-        // 체크박스 활성화 여부에 따라 첫 산후 휴직 시작일 변경 제한/해제 제어
         function syncParentalStart() {
             const linkLeave = document.getElementById('linkLeave').checked;
             const parRows = document.querySelectorAll('.par-row');
@@ -790,7 +785,6 @@
             return { totalPay, rows };
         }
 
-        // 날짜 범위 겹침 검증 유틸리티 함수
         function checkDateOverlap(ranges) {
             for (let i = 0; i < ranges.length; i++) {
                 for (let j = i + 1; j < ranges.length; j++) {
@@ -832,7 +826,6 @@
             const endDt = new Date(matEnd);
             let finalReturnDate = new Date(matEnd); 
 
-            // --- 날짜 겹침 방지 검증 로직 ---
             let allRanges = [];
             allRanges.push({ start: new Date(matStart), end: new Date(matEnd), label: '출산휴가' });
 
@@ -887,6 +880,9 @@
             document.getElementById('resMatDays').innerText = MAX_MAT_DAYS;
             document.getElementById('resMatDatesList').innerHTML = `<p class="text-gray-600 font-medium text-sm">${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-pink-500 font-bold ml-1">(${MAX_MAT_DAYS}일)</span></p>`;
 
+            // 수정된 부분: parNode를 document.getElementById('parResultNode')로 대체
+            const parResultNode = document.getElementById('parResultNode');
+
             if (hasValidParLeave) {
                 let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
                 allParRows.forEach(r => {
@@ -902,7 +898,7 @@
                 
                 const parMonthsApprox = Math.round(totalParDays / (dynamicMaxDays / MAX_PAR_MONTHS));
 
-                parNode.style.display = 'block';
+                parResultNode.style.display = 'block'; // 오류 수정 됨
                 document.getElementById('resParMonths').innerText = parMonthsApprox;
                 document.getElementById('resParDatesList').innerHTML = parPeriodsHTML;
 
@@ -918,7 +914,7 @@
                     finalReturnDate = new Date(finalParEndDate);
                 }
             } else {
-                parNode.style.display = 'none';
+                parResultNode.style.display = 'none'; // 오류 수정 됨
             }
 
             finalReturnDate.setDate(finalReturnDate.getDate() + 1);
