@@ -687,7 +687,9 @@
             let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
             if (containsLeapYear) {
                 dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 366 : 548;
-                document.getElementById('leapYearNotice').classList.remove('hidden');
+                const noticeEl = document.getElementById('leapYearNotice');
+                noticeEl.innerText = `✨ 윤달(2월 29일) 포함 (최대 ${dynamicMaxDays}일 적용)`;
+                noticeEl.classList.remove('hidden');
             } else {
                 document.getElementById('leapYearNotice').classList.add('hidden');
             }
