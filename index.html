@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <meta name="google-adsense-account" content="ca-pub-8881745451204327">
+    <!-- 구글 애드센스 자동 스크립트 (소유권 확인 및 자동 광고용) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8881745451204327" crossorigin="anonymous"></script>
+    
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
@@ -25,8 +28,20 @@
             <p class="text-blue-100 text-sm">달라진 1년 6개월 연장법 및 6+6 제도를 완벽 반영했습니다.</p>
         </div>
 
+        <!-- [광고 영역 1] 상단 배너 -->
+        <div class="w-full bg-gray-50 flex justify-center border-b">
+            <ins class="adsbygoogle"
+                 style="display:block; width:100%; height:90px;"
+                 data-ad-client="ca-pub-8881745451204327"
+                 data-ad-slot="1111111111"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.error('AdSense Error', e); }</script>
+        </div>
+
         <div class="p-6 space-y-8">
             
+            <!-- 1. 기본 조건 설정 -->
             <section>
                 <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700">
                     <i class="ri-user-settings-line mr-2"></i> 1. 기본 조건 설정
@@ -75,6 +90,18 @@
                 </div>
             </section>
 
+            <!-- [광고 영역 2] 중간 배너 -->
+            <div class="my-6">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-8881745451204327"
+                     data-ad-slot="2222222222"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.error('AdSense Error', e); }</script>
+            </div>
+
+            <!-- 2. 출산전후휴가 일정 -->
             <section>
                 <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700 justify-between">
                     <span><i class="ri-calendar-event-line mr-2"></i> 2. 출산전후휴가 일정</span>
@@ -121,6 +148,7 @@
                 </p>
             </section>
 
+            <!-- 3. 육아휴직 일정 -->
             <section>
                 <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700 justify-between">
                     <span><i class="ri-baby-carriage-line mr-2"></i> 3. 육아휴직 일정</span>
@@ -169,13 +197,13 @@
                             <span class="text-xs text-gray-500">(약 <span id="remainingParDays">365</span>일)</span>
                         </div>
                         <div id="leapYearNotice" class="text-xs text-indigo-600 font-bold mt-1 hidden">
-                            ✨ 윤달(2월 29일) 포함 (총 366일 적용)
+                            ✨ (최대 365일 적용)
                         </div>
                     </div>
                 </div>
                 <p class="text-xs text-gray-500 mt-3">
                     * 출산 후 육아휴직은 관련 법령에 따라 최대 3회(총 4회)까지만 나누어 사용할 수 있습니다.<br>
-                    * 윤달 포함 여부에 따라 실제 사용할 수 있는 총 일수(365/366일)는 자동 조정됩니다.
+                    * 18개월 특례 대상 및 윤달 포함 여부에 따라 실제 사용할 수 있는 총 일수는 자동 조정됩니다.
                 </p>
             </section>
 
@@ -183,6 +211,7 @@
                 나의 맞춤형 휴가 플랜 생성하기
             </button>
 
+            <!-- 결과 출력 섹션 -->
             <section id="resultSection" class="hidden mt-8 border-t-2 border-dashed border-gray-300 pt-8">
                 <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">🗓️ 나의 휴가 타임라인</h2>
                 
@@ -237,9 +266,22 @@
                     </button>
                 </div>
             </section>
+
+            <!-- [광고 영역 3] 하단 배너 (결과창 아래) -->
+            <div class="mt-8 border-t pt-6">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-8881745451204327"
+                     data-ad-slot="3333333333"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.error('AdSense Error', e); }</script>
+            </div>
+
         </div>
     </div>
 
+    <!-- 모달창 -->
     <div id="policyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative transform transition-all">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
@@ -350,11 +392,8 @@
             const start = new Date(startStr);
             const end = new Date(endStr);
             if (end < start) return 0;
-
             end.setDate(end.getDate() + 1);
-
             let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-            
             if (end.getDate() < start.getDate()) {
                 months--;
                 const tempDate = new Date(end.getFullYear(), end.getMonth(), 0); 
@@ -365,7 +404,6 @@
                 const remainingDays = end.getDate() - start.getDate();
                 months += remainingDays / 30.416;
             }
-            
             return months;
         }
 
@@ -457,7 +495,6 @@
         function addPrenatalParLeaveRow() {
             prenatalParLeaveCount++;
             const container = document.getElementById('prenatalParLeaveContainer');
-            
             const row = document.createElement('div');
             row.className = 'flex items-center gap-2 bg-yellow-50 p-2 border border-yellow-200 rounded-lg shadow-sm relative prenatal-par-row';
             row.id = `prenatalParRow_${prenatalParLeaveCount}`;
@@ -542,7 +579,6 @@
 
             parLeaveCount++;
             const container = document.getElementById('parLeaveContainer');
-            
             const row = document.createElement('div');
             row.className = 'flex items-center gap-2 bg-white p-2 border rounded-lg shadow-sm relative par-row';
             row.id = `parRow_${parLeaveCount}`;
@@ -686,14 +722,15 @@
             });
 
             let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
+            const noticeEl = document.getElementById('leapYearNotice');
+            
             if (containsLeapYear) {
                 dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 366 : 548;
-                const noticeEl = document.getElementById('leapYearNotice');
                 noticeEl.innerText = `✨ 윤달(2월 29일) 포함 (최대 ${dynamicMaxDays}일 적용)`;
-                noticeEl.classList.remove('hidden');
             } else {
-                document.getElementById('leapYearNotice').classList.add('hidden');
+                noticeEl.innerText = `✨ (최대 ${dynamicMaxDays}일 적용)`;
             }
+            noticeEl.classList.remove('hidden');
 
             const daysPerMonth = dynamicMaxDays / MAX_PAR_MONTHS;
             let remainingDays = dynamicMaxDays - totalUsedDays;
@@ -883,7 +920,6 @@
             document.getElementById('resMatDays').innerText = MAX_MAT_DAYS;
             document.getElementById('resMatDatesList').innerHTML = `<p class="text-gray-600 font-medium text-sm">${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-pink-500 font-bold ml-1">(${MAX_MAT_DAYS}일)</span></p>`;
 
-            // 수정된 부분: parNode를 document.getElementById('parResultNode')로 대체
             const parResultNode = document.getElementById('parResultNode');
 
             if (hasValidParLeave) {
@@ -901,7 +937,7 @@
                 
                 const parMonthsApprox = Math.round(totalParDays / (dynamicMaxDays / MAX_PAR_MONTHS));
 
-                parResultNode.style.display = 'block'; // 오류 수정 됨
+                parResultNode.style.display = 'block';
                 document.getElementById('resParMonths').innerText = parMonthsApprox;
                 document.getElementById('resParDatesList').innerHTML = parPeriodsHTML;
 
@@ -917,7 +953,7 @@
                     finalReturnDate = new Date(finalParEndDate);
                 }
             } else {
-                parResultNode.style.display = 'none'; // 오류 수정 됨
+                parResultNode.style.display = 'none';
             }
 
             finalReturnDate.setDate(finalReturnDate.getDate() + 1);
