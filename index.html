@@ -67,43 +67,88 @@
                 </div>
             </section>
 
-            <!-- STEP 2: 출산휴가 일정 (분할 가능) -->
+            <!-- STEP 2: 출산휴가 일정 -->
             <section>
                 <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700 justify-between">
                     <span><i class="ri-calendar-event-line mr-2"></i> 2. 출산전후휴가 일정</span>
-                    <span class="text-sm font-normal text-gray-600 bg-gray-100 px-2 py-1 rounded">최대 <span id="maxMatDaysDisplay" class="font-bold text-blue-600">90</span>일</span>
+                    <span class="text-sm font-normal text-gray-600 bg-gray-100 px-2 py-1 rounded">총 <span id="maxMatDaysDisplay" class="font-bold text-blue-600">90</span>일 연속사용</span>
                 </h2>
                 
-                <div id="matLeaveContainer" class="space-y-3">
-                    <!-- 분할 항목들이 여기에 추가됩니다 -->
-                </div>
-                
-                <div class="flex justify-between items-center mt-3">
-                    <button onclick="addMatLeaveRow()" class="text-sm text-blue-600 font-semibold hover:text-blue-800 flex items-center">
-                        <i class="ri-add-circle-line mr-1"></i> 휴가 분할 추가
-                    </button>
-                    <div class="text-sm font-medium">
-                        총 사용: <span id="totalMatDaysUsed" class="text-pink-600 font-bold">0</span>일 / 남은 일수: <span id="remainingMatDays" class="text-green-600 font-bold">90</span>일
+                <div class="bg-white p-4 border rounded-lg shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">출산휴가 시작일</label>
+                            <input type="date" id="matStartDate" class="w-full p-3 border rounded outline-none focus:ring-2 focus:ring-pink-400" onchange="calculateMatLeave()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">실제(예정) 출산일</label>
+                            <input type="date" id="babyBirthDate" class="w-full p-3 border rounded outline-none focus:ring-2 focus:ring-pink-400" onchange="syncBirthDate(this.value)">
+                        </div>
+                    </div>
+
+                    <!-- 출산 전/후 기간 표시 영역 -->
+                    <div id="matPeriodDetails" class="hidden mb-4 grid grid-cols-2 gap-2 text-center text-sm">
+                        <div class="bg-yellow-50 p-2 rounded border border-yellow-200">
+                            <span class="block text-yellow-700 text-xs font-bold mb-1">출산 전 휴가</span>
+                            <span id="daysBeforeBirth" class="text-yellow-600 font-extrabold text-lg">0</span><span class="text-yellow-600">일</span>
+                        </div>
+                        <div class="bg-pink-50 p-2 rounded border border-pink-200">
+                            <span class="block text-pink-700 text-xs font-bold mb-1">출산 후 휴가</span>
+                            <span id="daysAfterBirth" class="text-pink-600 font-extrabold text-lg">0</span><span class="text-pink-600">일</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between bg-pink-50 p-3 rounded text-sm mt-2">
+                        <span class="font-medium text-gray-700">출산휴가 종료일 (자동계산):</span>
+                        <span id="matEndDateDisplay" class="font-bold text-pink-600 text-base">-</span>
+                    </div>
+                    
+                    <div id="matWarningBox" class="mt-3 p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm hidden">
+                        <i class="ri-error-warning-fill mr-1"></i>
+                        <span id="matWarningText"></span>
                     </div>
                 </div>
                 
                 <p class="text-xs text-gray-500 mt-3">
-                    * 출산휴가는 자유롭게 분할 입력 가능하며, 법정 최대 일수 이내로 플랜 생성이 가능합니다.<br>
-                    * 단, 법적으로 출산 후의 휴가 기간이 반드시 45일(다태아 60일) 이상 되어야 합니다.
+                    * 출산휴가는 <span class="font-bold">중단 없이 연속</span>하여 사용해야 합니다.<br>
+                    * 근로기준법상 출산일(당일 포함) 이후 <span class="font-bold text-pink-500">반드시 45일(다태아 60일) 이상이 배정</span>되어야 합니다.
                 </p>
             </section>
 
-            <!-- STEP 3: 육아휴직 일정 (선택 및 분할 가능) -->
+            <!-- STEP 3: 육아휴직 일정 -->
             <section>
                 <h2 class="text-lg font-bold border-b pb-2 mb-4 flex items-center text-blue-700 justify-between">
-                    <span><i class="ri-baby-carriage-line mr-2"></i> 3. 육아휴직 일정 (최대 2회 분할 가능)</span>
+                    <span><i class="ri-baby-carriage-line mr-2"></i> 3. 육아휴직 일정</span>
                     <span class="text-sm font-normal text-gray-600 bg-gray-100 px-2 py-1 rounded">최대 <span id="maxParMonthsDisplay" class="font-bold text-blue-600">12</span>개월</span>
                 </h2>
+
+                <!-- 임신 중 육아휴직 영역 -->
+                <div class="mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-bold text-yellow-800">🤰 임신 중(산전) 육아휴직</h3>
+                        <button onclick="addPrenatalParLeaveRow()" class="text-xs text-yellow-700 font-semibold hover:text-yellow-900 flex items-center bg-yellow-200 px-2 py-1 rounded shadow-sm">
+                            <i class="ri-add-circle-line mr-1"></i> 산전 휴가 추가
+                        </button>
+                    </div>
+                    <div id="prenatalParLeaveContainer" class="space-y-2 mb-2">
+                        <!-- 산전 육아휴직 항목들이 여기에 추가됩니다 -->
+                    </div>
+                    <p class="text-[11px] text-yellow-700 font-medium">* 임신 중 육아휴직은 분할 횟수 차감 없이 무제한 나누어 쓸 수 있습니다.</p>
+                </div>
+
+                <!-- 출산일 확인 영역 -->
+                <div class="flex items-center justify-between bg-pink-50 p-3 rounded-lg border border-pink-200 mb-4 shadow-sm">
+                    <label class="text-sm font-semibold text-pink-800">실제(예정) 출산일 확인</label>
+                    <input type="date" id="parBabyBirthDate" onchange="syncBirthDate(this.value)" class="p-2 border rounded outline-none text-sm focus:ring-2 focus:ring-pink-400">
+                </div>
                 
+                <!-- 출산 후 육아휴직 영역 -->
+                <h3 class="text-sm font-bold text-blue-800 mb-2">👶 출산 후 육아휴직 (법정 횟수 차감)</h3>
                 <div class="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
                     <label class="flex items-center space-x-2 cursor-pointer">
+                        <!-- 체크박스 변경 시 syncParentalStart 호출 -->
                         <input type="checkbox" id="linkLeave" class="w-5 h-5 text-blue-600 rounded" onchange="syncParentalStart()" checked>
-                        <span class="text-sm font-medium text-blue-800">마지막 출산휴가 종료 다음 날부터 연달아 첫 육아휴직 시작</span>
+                        <span class="text-sm font-medium text-blue-800">마지막 출산휴가 종료 다음 날부터 연달아 첫 산후 휴직 시작</span>
                     </label>
                 </div>
 
@@ -113,15 +158,25 @@
 
                 <div class="flex justify-between items-center mt-3">
                     <button onclick="addParLeaveRow()" class="text-sm text-blue-600 font-semibold hover:text-blue-800 flex items-center">
-                        <i class="ri-add-circle-line mr-1"></i> 육아휴직 분할 추가
+                        <i class="ri-add-circle-line mr-1"></i> 산후 휴가 분할 추가
                     </button>
-                    <div class="text-sm font-medium">
-                        총 사용: <span id="totalParMonthsUsed" class="text-blue-600 font-bold">0.0</span>개월 / 남은 기간: <span id="remainingParMonths" class="text-green-600 font-bold">12.0</span>개월
+                    <div class="text-sm font-medium text-right">
+                        <div class="mb-1">
+                            총 사용: <span class="text-blue-600 font-bold"><span id="totalParMonthsUsed">0.0</span>개월</span>
+                            <span class="text-xs text-gray-500">(<span id="totalParDaysUsed">0</span>일)</span>
+                        </div>
+                        <div>
+                            남은 기간: <span class="text-green-600 font-bold"><span id="remainingParMonths">12.0</span>개월</span>
+                            <span class="text-xs text-gray-500">(약 <span id="remainingParDays">365</span>일)</span>
+                        </div>
+                        <div id="leapYearNotice" class="text-xs text-indigo-600 font-bold mt-1 hidden">
+                            ✨ 윤달(2월 29일) 포함 (총 366일 적용)
+                        </div>
                     </div>
                 </div>
                 <p class="text-xs text-gray-500 mt-3">
-                    * 육아휴직은 관련 법령에 따라 최대 2회(총 3회)까지만 나누어 사용할 수 있습니다.<br>
-                    * 사용하지 않을 경우 날짜를 비워두시면 됩니다.
+                    * 출산 후 육아휴직은 관련 법령에 따라 최대 3회(총 4회)까지만 나누어 사용할 수 있습니다.<br>
+                    * 윤달 포함 여부에 따라 실제 사용할 수 있는 총 일수(365/366일)는 자동 조정됩니다.
                 </p>
             </section>
 
@@ -141,7 +196,7 @@
                         <div class="absolute -left-10 bg-pink-500 w-6 h-6 rounded-full border-4 border-white shadow"></div>
                         <h3 class="text-lg font-bold text-pink-600">출산전후휴가 (총 <span id="resMatDays">90</span>일)</h3>
                         <div id="resMatDatesList" class="mt-2 space-y-1">
-                            <!-- 분할 일정들이 여기에 표시됨 -->
+                            <!-- 단일 출산휴가 일정이 여기에 표시됨 -->
                         </div>
                         <p class="text-sm text-gray-500 mt-2">급여: 통상임금 100% (상한 220만원)</p>
                     </div>
@@ -192,10 +247,9 @@
 
     <script>
         let MAX_MAT_DAYS = 90;
-        let matLeaveCount = 0;
-        
         let MAX_PAR_MONTHS = 12;
         let parLeaveCount = 0;
+        let prenatalParLeaveCount = 0;
 
         function formatCurrency(input) {
             let value = input.value.replace(/[^0-9]/g, '');
@@ -226,178 +280,119 @@
             const end = new Date(endStr);
             if (end < start) return -1;
             const diffTime = Math.abs(end - start);
-            return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+        }
+
+        function hasLeapDay(startStr, endStr) {
+            if (!startStr || !endStr) return false;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            
+            let curr = new Date(start);
+            while (curr <= end) {
+                if (curr.getMonth() === 1 && curr.getDate() === 29) {
+                    return true;
+                }
+                curr.setDate(curr.getDate() + 1);
+            }
+            return false;
+        }
+
+        function calculateMonthsBetween(startStr, endStr) {
+            if (!startStr || !endStr) return 0;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            if (end < start) return 0;
+
+            end.setDate(end.getDate() + 1);
+
+            let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+            
+            if (end.getDate() < start.getDate()) {
+                months--;
+                const tempDate = new Date(end.getFullYear(), end.getMonth(), 0); 
+                const daysInPrevMonth = tempDate.getDate();
+                const remainingDays = daysInPrevMonth - start.getDate() + end.getDate();
+                months += remainingDays / 30.416;
+            } else {
+                const remainingDays = end.getDate() - start.getDate();
+                months += remainingDays / 30.416;
+            }
+            
+            return months;
+        }
+
+        function syncBirthDate(val) {
+            const matBirthEl = document.getElementById('babyBirthDate');
+            const parBirthEl = document.getElementById('parBabyBirthDate');
+            if (matBirthEl.value !== val) matBirthEl.value = val;
+            if (parBirthEl.value !== val) parBirthEl.value = val;
+            calculateMatLeave();
         }
 
         // --- 출산휴가 로직 ---
         function updateMaxMatDays() {
             MAX_MAT_DAYS = document.getElementById('isTwins').checked ? 120 : 90;
             document.getElementById('maxMatDaysDisplay').innerText = MAX_MAT_DAYS;
-            calculateMatDays();
+            calculateMatLeave();
         }
 
-        function addMatLeaveRow(isInitial = false) {
-            const rows = document.querySelectorAll('.mat-row');
+        function calculateMatLeave() {
+            const startDateVal = document.getElementById('matStartDate').value;
+            const birthDateVal = document.getElementById('babyBirthDate').value;
+            const endDateDisplay = document.getElementById('matEndDateDisplay');
+            const warningBox = document.getElementById('matWarningBox');
+            const warningText = document.getElementById('matWarningText');
+            const periodDetails = document.getElementById('matPeriodDetails');
+            const daysBeforeBirthEl = document.getElementById('daysBeforeBirth');
+            const daysAfterBirthEl = document.getElementById('daysAfterBirth');
+
+            warningBox.classList.add('hidden');
+            periodDetails.classList.add('hidden');
+            endDateDisplay.innerText = '-';
+            endDateDisplay.dataset.endDate = '';
+
+            if (!startDateVal) return;
+
+            const startDt = new Date(startDateVal);
+            const endDt = new Date(startDt);
+            endDt.setDate(startDt.getDate() + MAX_MAT_DAYS - 1); 
             
-            // 법적/UI 횟수 제한
-            if (!isInitial && rows.length >= 4) {
-                alert("출산휴가는 법적으로 임신 중 분할 횟수 제한은 없으나, 출산 후 45일(다태아 60일)은 반드시 연속 사용해야 합니다.\n본 플래너에서는 계산 편의상 최대 4개의 구간까지만 추가 가능합니다.");
-                return;
-            }
+            const endDateVal = formatDateForInput(endDt);
+            endDateDisplay.innerText = formatDate(endDt);
+            endDateDisplay.dataset.endDate = endDateVal; 
 
-            let defaultStart = '';
-            let defaultEnd = '';
-            
-            if (!isInitial && rows.length > 0) {
-                let totalUsed = 0;
-                rows.forEach((r) => {
-                    const s = r.querySelector('.mat-start').value;
-                    const e = r.querySelector('.mat-end').value;
-                    if(s && e) {
-                        totalUsed += calculateDaysBetween(s, e);
-                    }
-                });
-                const remaining = MAX_MAT_DAYS - totalUsed;
-
-                // [추가요청반영] 잔여일이 0일 때 추가 버튼 클릭 방지 및 알림
-                if (remaining <= 0) {
-                    alert("남은 출산휴가 일수가 없습니다.");
-                    return; 
-                }
-
-                const lastRow = rows[rows.length - 1];
-                const lastEndVal = lastRow.querySelector('.mat-end').value;
+            if (birthDateVal) {
+                const birthDt = new Date(birthDateVal);
                 
-                if (lastEndVal) {
-                    const prevEndDt = new Date(lastEndVal);
-                    // 시작일: 이전 종료일 다음날로 자동 셋업
-                    const newStartDt = new Date(prevEndDt);
-                    newStartDt.setDate(prevEndDt.getDate() + 1);
-                    defaultStart = formatDateForInput(newStartDt);
+                if (birthDt < startDt) {
+                    warningText.innerText = "출산일이 출산휴가 시작일보다 빠를 수 없습니다.";
+                    warningBox.classList.remove('hidden');
+                } else if (birthDt > endDt) {
+                    warningText.innerText = "출산일이 출산휴가 기간을 벗어났습니다.";
+                    warningBox.classList.remove('hidden');
                 } else {
-                    alert("이전 구간의 종료일을 먼저 입력해주세요.");
-                    return; 
-                }
-            }
-
-            matLeaveCount++;
-            const container = document.getElementById('matLeaveContainer');
-            
-            const row = document.createElement('div');
-            row.className = 'flex items-center gap-2 bg-white p-2 border rounded-lg shadow-sm relative mat-row';
-            row.id = `matRow_${matLeaveCount}`;
-
-            // [추가요청반영] 최대사용 체크박스 추가
-            row.innerHTML = `
-                <div class="flex-1">
-                    <label class="text-xs text-gray-500 mb-1 block">시작일</label>
-                    <input type="date" class="w-full p-2 text-sm border rounded outline-none mat-start" onchange="calculateMatDays(this)" value="${defaultStart}">
-                </div>
-                <div class="text-gray-400 mt-5">~</div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-xs text-gray-500 block">종료일</label>
-                        <label class="text-[10px] flex items-center text-blue-600 cursor-pointer font-bold">
-                            <input type="checkbox" class="mr-1 mat-max-cb" onchange="applyMaxMatDays(this)"> 최대사용
-                        </label>
-                    </div>
-                    <input type="date" class="w-full p-2 text-sm border rounded outline-none mat-end" onchange="calculateMatDays(this)" value="${defaultEnd}">
-                </div>
-                <div class="w-16 text-center mt-5">
-                    <span class="text-sm font-bold text-blue-600 mat-days-display">0</span><span class="text-xs text-gray-500">일</span>
-                </div>
-                ${matLeaveCount > 1 ? `<button onclick="removeMatLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200"><i class="ri-close-line"></i></button>` : ''}
-            `;
-            container.appendChild(row);
-            calculateMatDays();
-        }
-
-        function removeMatLeaveRow(rowId) {
-            document.getElementById(rowId).remove();
-            calculateMatDays();
-        }
-
-        // [추가요청반영] 최대사용 버튼 동작 로직
-        function applyMaxMatDays(checkbox) {
-            const row = checkbox.closest('.mat-row');
-            const startInput = row.querySelector('.mat-start');
-            const endInput = row.querySelector('.mat-end');
-
-            if (checkbox.checked) {
-                if (!startInput.value) {
-                    alert("시작일을 먼저 입력해주세요.");
-                    checkbox.checked = false;
-                    return;
-                }
-
-                const rows = document.querySelectorAll('.mat-row');
-                let totalOtherUsed = 0;
-                rows.forEach(r => {
-                    if (r !== row) {
-                        const s = r.querySelector('.mat-start').value;
-                        const e = r.querySelector('.mat-end').value;
-                        if (s && e) {
-                            totalOtherUsed += calculateDaysBetween(s, e);
-                        }
+                    let daysBefore = 0;
+                    if (birthDt > startDt) {
+                        const dayBeforeBirthDt = new Date(birthDt);
+                        dayBeforeBirthDt.setDate(birthDt.getDate() - 1);
+                        daysBefore = calculateDaysBetween(startDateVal, formatDateForInput(dayBeforeBirthDt));
                     }
-                });
+                    
+                    const daysAfter = calculateDaysBetween(birthDateVal, endDateVal);
+                    
+                    daysBeforeBirthEl.innerText = daysBefore;
+                    daysAfterBirthEl.innerText = daysAfter;
+                    periodDetails.classList.remove('hidden');
 
-                const remaining = MAX_MAT_DAYS - totalOtherUsed;
-                if (remaining > 0) {
-                    const startDt = new Date(startInput.value);
-                    const endDt = new Date(startDt);
-                    endDt.setDate(startDt.getDate() + remaining - 1);
-                    endInput.value = formatDateForInput(endDt);
-                    calculateMatDays();
-                } else {
-                    alert("남은 출산휴가 일수가 없습니다.");
-                    checkbox.checked = false;
-                }
-            }
-        }
-
-        function calculateMatDays(element = null) {
-            // 수동으로 날짜를 변경하면 최대사용 체크박스 해제
-            if (element && element.classList && element.classList.contains('mat-end')) {
-                const row = element.closest('.mat-row');
-                const cb = row.querySelector('.mat-max-cb');
-                if (cb) cb.checked = false;
-            }
-
-            const rows = document.querySelectorAll('.mat-row');
-            let totalUsed = 0;
-
-            rows.forEach((row) => {
-                const startInput = row.querySelector('.mat-start');
-                const endInput = row.querySelector('.mat-end');
-                const display = row.querySelector('.mat-days-display');
-
-                if (startInput.value && endInput.value) {
-                    const days = calculateDaysBetween(startInput.value, endInput.value);
-                    if(days > 0) {
-                        display.innerText = days;
-                        totalUsed += days;
-                    } else {
-                        display.innerText = 0;
+                    const requiredDays = document.getElementById('isTwins').checked ? 60 : 45;
+                    if (daysAfter < requiredDays) {
+                        warningText.innerHTML = `법적으로 출산일 포함 <b>출산 후 휴가가 최소 ${requiredDays}일 이상 배정</b>되어야 합니다.<br>(현재 배정: ${daysAfter}일)`;
+                        warningBox.classList.remove('hidden');
                     }
-                } else {
-                    display.innerText = 0;
                 }
-            });
-
-            document.getElementById('totalMatDaysUsed').innerText = totalUsed;
-            const remaining = MAX_MAT_DAYS - totalUsed;
-            document.getElementById('remainingMatDays').innerText = remaining;
-            
-            const remainEl = document.getElementById('remainingMatDays');
-            if(remaining < 0) {
-                remainEl.className = 'text-red-600 font-bold';
-            } else if (remaining === 0) {
-                remainEl.className = 'text-gray-500 font-bold';
-            } else {
-                remainEl.className = 'text-green-600 font-bold';
             }
-
+            
             syncParentalStart();
         }
 
@@ -411,13 +406,52 @@
         function updateMaxParMonths() {
             MAX_PAR_MONTHS = getMaxParMonths();
             document.getElementById('maxParMonthsDisplay').innerText = MAX_PAR_MONTHS;
-            calculateParDays(); // 최대치가 변하면 하단 계산 UI도 갱신
+            calculateParDays(); 
+        }
+
+        function addPrenatalParLeaveRow() {
+            prenatalParLeaveCount++;
+            const container = document.getElementById('prenatalParLeaveContainer');
+            
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-2 bg-yellow-50 p-2 border border-yellow-200 rounded-lg shadow-sm relative prenatal-par-row';
+            row.id = `prenatalParRow_${prenatalParLeaveCount}`;
+
+            row.innerHTML = `
+                <div class="flex-1">
+                    <label class="text-xs text-yellow-700 mb-1 block">시작일</label>
+                    <input type="date" class="w-full p-2 text-sm border rounded outline-none par-start" onchange="calculateParDays(this)">
+                </div>
+                <div class="text-gray-400 mt-5">~</div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs text-yellow-700 block">종료일</label>
+                        <label class="text-[10px] flex items-center text-blue-600 cursor-pointer font-bold par-max-wrap">
+                            <input type="checkbox" class="mr-1 par-max-cb" onchange="applyMaxParDays(this)"> 최대사용
+                        </label>
+                    </div>
+                    <input type="date" class="w-full p-2 text-sm border rounded outline-none par-end" onchange="calculateParDays(this)">
+                </div>
+                <div class="w-16 text-center mt-5">
+                    <span class="text-sm font-bold text-blue-600 par-days-display">0</span><span class="text-xs text-gray-500">일</span>
+                </div>
+                <button onclick="removePrenatalParLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200"><i class="ri-close-line"></i></button>
+            `;
+            container.appendChild(row);
+            updateParMaxCheckboxes();
+            calculateParDays();
+        }
+
+        function removePrenatalParLeaveRow(rowId) {
+            document.getElementById(rowId).remove();
+            updateParMaxCheckboxes();
+            calculateParDays();
         }
 
         function addParLeaveRow(isInitial = false) {
             const rows = document.querySelectorAll('.par-row');
-            if (!isInitial && rows.length >= 3) {
-                alert("육아휴직은 법적으로 최대 2회 분할(총 3회)까지만 사용할 수 있습니다.");
+            if (!isInitial && rows.length >= 4) {
+                alert("출산 후 육아휴직은 관련 법령에 따라 최대 3회 분할(총 4회)까지만 사용할 수 있습니다.");
                 return;
             }
             
@@ -425,7 +459,7 @@
             
             if (!isInitial && rows.length > 0) {
                 let totalUsedDays = 0;
-                rows.forEach((r) => {
+                document.querySelectorAll('.par-row, .prenatal-par-row').forEach((r) => {
                     const s = r.querySelector('.par-start').value;
                     const e = r.querySelector('.par-end').value;
                     if(s && e) {
@@ -433,11 +467,16 @@
                     }
                 });
                 
-                const usedMonths = (totalUsedDays / 30).toFixed(1);
-                const remainingMonths = (MAX_PAR_MONTHS - usedMonths).toFixed(1);
+                let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
+                document.querySelectorAll('.par-row, .prenatal-par-row').forEach((r) => {
+                    if (hasLeapDay(r.querySelector('.par-start').value, r.querySelector('.par-end').value)) {
+                        dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 366 : 548;
+                    }
+                });
+
+                const remainingDays = dynamicMaxDays - totalUsedDays;
                 
-                // [추가요청반영] 육아휴직 잔여일 0일 때 메시지
-                if (remainingMonths <= 0) {
+                if (remainingDays <= 0) {
                     alert("남은 육아휴직 기간이 없습니다."); 
                     return;
                 }
@@ -463,7 +502,6 @@
             row.className = 'flex items-center gap-2 bg-white p-2 border rounded-lg shadow-sm relative par-row';
             row.id = `parRow_${parLeaveCount}`;
 
-            // [추가요청반영] 육아휴직에도 최대사용 체크박스 지원
             row.innerHTML = `
                 <div class="flex-1">
                     <label class="text-xs text-gray-500 mb-1 block">시작일</label>
@@ -473,7 +511,7 @@
                 <div class="flex-1">
                     <div class="flex justify-between items-center mb-1">
                         <label class="text-xs text-gray-500 block">종료일</label>
-                        <label class="text-[10px] flex items-center text-blue-600 cursor-pointer font-bold">
+                        <label class="text-[10px] flex items-center text-blue-600 cursor-pointer font-bold par-max-wrap">
                             <input type="checkbox" class="mr-1 par-max-cb" onchange="applyMaxParDays(this)"> 최대사용
                         </label>
                     </div>
@@ -489,17 +527,38 @@
             if (isInitial || parLeaveCount === 1) {
                 syncParentalStart();
             }
+            updateParMaxCheckboxes();
             calculateParDays();
         }
 
         function removeParLeaveRow(rowId) {
             document.getElementById(rowId).remove();
+            updateParMaxCheckboxes();
             calculateParDays();
             syncParentalStart();
         }
 
+        function updateParMaxCheckboxes() {
+            const preRows = document.querySelectorAll('.prenatal-par-row');
+            const postRows = document.querySelectorAll('.par-row');
+            const allRows = [...preRows, ...postRows];
+
+            allRows.forEach((row, idx) => {
+                const wrap = row.querySelector('.par-max-wrap');
+                if (wrap) {
+                    if (idx === allRows.length - 1) {
+                        wrap.style.display = 'flex';
+                    } else {
+                        wrap.style.display = 'none';
+                        const cb = row.querySelector('.par-max-cb');
+                        if (cb) cb.checked = false;
+                    }
+                }
+            });
+        }
+
         function applyMaxParDays(checkbox) {
-            const row = checkbox.closest('.par-row');
+            const row = checkbox.closest('.par-row, .prenatal-par-row');
             const startInput = row.querySelector('.par-start');
             const endInput = row.querySelector('.par-end');
 
@@ -510,7 +569,7 @@
                     return;
                 }
 
-                const rows = document.querySelectorAll('.par-row');
+                const rows = document.querySelectorAll('.par-row, .prenatal-par-row');
                 let totalOtherUsedDays = 0;
                 rows.forEach(r => {
                     if (r !== row) {
@@ -522,8 +581,14 @@
                     }
                 });
 
-                const maxDays = MAX_PAR_MONTHS * 30; // 30일 기준으로 대략적 한도 계산
-                const remainingDays = maxDays - totalOtherUsedDays;
+                let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
+                rows.forEach(r => {
+                    if (hasLeapDay(r.querySelector('.par-start').value, r.querySelector('.par-end').value)) {
+                        dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 366 : 548;
+                    }
+                });
+
+                const remainingDays = dynamicMaxDays - totalOtherUsedDays;
 
                 if (remainingDays > 0) {
                     const startDt = new Date(startInput.value);
@@ -539,15 +604,16 @@
         }
 
         function calculateParDays(element = null) {
-            // 수동으로 날짜를 변경하면 최대사용 체크박스 해제
             if (element && element.classList && element.classList.contains('par-end')) {
-                const row = element.closest('.par-row');
+                const row = element.closest('.par-row, .prenatal-par-row');
                 const cb = row.querySelector('.par-max-cb');
                 if (cb) cb.checked = false;
             }
 
-            const rows = document.querySelectorAll('.par-row');
+            const rows = document.querySelectorAll('.par-row, .prenatal-par-row');
             let totalUsedDays = 0;
+            let totalUsedMonths = 0;
+            let containsLeapYear = false;
 
             rows.forEach((row) => {
                 const startInput = row.querySelector('.par-start');
@@ -556,9 +622,16 @@
 
                 if (startInput.value && endInput.value) {
                     const days = calculateDaysBetween(startInput.value, endInput.value);
+                    const months = calculateMonthsBetween(startInput.value, endInput.value);
+                    
+                    if (hasLeapDay(startInput.value, endInput.value)) {
+                        containsLeapYear = true;
+                    }
+
                     if(days > 0) {
                         display.innerText = days;
                         totalUsedDays += days;
+                        totalUsedMonths += months;
                     } else {
                         display.innerText = 0;
                     }
@@ -567,17 +640,31 @@
                 }
             });
 
-            // 개월 수 환산 (30일 기준)
-            const usedMonths = (totalUsedDays / 30).toFixed(1);
-            document.getElementById('totalParMonthsUsed').innerText = usedMonths;
+            let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
+            if (containsLeapYear) {
+                dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 366 : 548;
+                document.getElementById('leapYearNotice').classList.remove('hidden');
+            } else {
+                document.getElementById('leapYearNotice').classList.add('hidden');
+            }
+
+            const daysPerMonth = dynamicMaxDays / MAX_PAR_MONTHS;
+            let remainingDays = dynamicMaxDays - totalUsedDays;
+            if (remainingDays < 0) remainingDays = 0;
             
-            const remainingMonths = (MAX_PAR_MONTHS - usedMonths).toFixed(1);
-            document.getElementById('remainingParMonths').innerText = remainingMonths;
+            let remainingMonths = remainingDays / daysPerMonth;
+            if (remainingMonths < 0.05) remainingMonths = 0;
+
+            document.getElementById('totalParMonthsUsed').innerText = totalUsedMonths.toFixed(1);
+            document.getElementById('totalParDaysUsed').innerText = totalUsedDays;
             
-            const remainEl = document.getElementById('remainingParMonths');
-            if(remainingMonths < 0) {
+            document.getElementById('remainingParMonths').innerText = remainingMonths.toFixed(1);
+            document.getElementById('remainingParDays').innerText = remainingDays;
+            
+            const remainEl = document.getElementById('remainingParMonths').parentElement;
+            if(remainingDays < 0) {
                 remainEl.className = 'text-red-600 font-bold';
-            } else if (remainingMonths == 0) {
+            } else if (remainingDays === 0) {
                 remainEl.className = 'text-gray-500 font-bold';
             } else {
                 remainEl.className = 'text-green-600 font-bold';
@@ -595,19 +682,14 @@
                 firstParStartInput.readOnly = true;
                 firstParStartInput.classList.add('bg-gray-100');
                 
-                const matRows = document.querySelectorAll('.mat-row');
-                if(matRows.length > 0) {
-                    const lastRow = matRows[matRows.length - 1];
-                    const lastEnd = lastRow.querySelector('.mat-end').value;
-                    
-                    if (lastEnd) {
-                        const endDate = new Date(lastEnd);
-                        const parStart = new Date(endDate);
-                        parStart.setDate(endDate.getDate() + 1);
-                        firstParStartInput.value = formatDateForInput(parStart);
-                    } else {
-                        firstParStartInput.value = '';
-                    }
+                const matEndDisplay = document.getElementById('matEndDateDisplay');
+                const matEndVal = matEndDisplay.dataset.endDate;
+                
+                if (matEndVal) {
+                    const endDate = new Date(matEndVal);
+                    const parStart = new Date(endDate);
+                    parStart.setDate(endDate.getDate() + 1);
+                    firstParStartInput.value = formatDateForInput(parStart);
                 } else {
                     firstParStartInput.value = '';
                 }
@@ -659,6 +741,21 @@
             return { totalPay, rows };
         }
 
+        // 날짜 범위 겹침 검증 유틸리티 함수
+        function checkDateOverlap(ranges) {
+            // ranges는 [{start: Date, end: Date, label: string}] 형태
+            for (let i = 0; i < ranges.length; i++) {
+                for (let j = i + 1; j < ranges.length; j++) {
+                    let r1 = ranges[i];
+                    let r2 = ranges[j];
+                    if (r1.start <= r2.end && r2.start <= r1.end) {
+                        return true; // 겹침 발생
+                    }
+                }
+            }
+            return false;
+        }
+
         function calculateAll() {
             const salaryInputStr = document.getElementById('salary').value.replace(/,/g, '');
             const salary = parseInt(salaryInputStr || 0);
@@ -668,100 +765,98 @@
                 return;
             }
 
-            // 1. 출산휴가 계산부
-            const matRows = document.querySelectorAll('.mat-row');
-            let totalMatDays = 0;
-            let matPeriodsHTML = '';
-            let finalMatEndDate = null;
-
-            if (matRows.length === 0) {
-                alert('출산휴가 일정을 입력해주세요.'); return;
-            }
-
-            let hasError = false;
-            matRows.forEach((row, i) => {
-                const start = row.querySelector('.mat-start').value;
-                const end = row.querySelector('.mat-end').value;
-                if(!start || !end) {
-                    hasError = true; return;
-                }
-                const startDt = new Date(start);
-                const endDt = new Date(end);
-                
-                if (endDt < startDt) {
-                    alert(`출산휴가 ${i+1}번째 분할의 종료일이 시작일보다 빠릅니다.`);
-                    hasError = true; return;
-                }
-
-                const days = calculateDaysBetween(start, end);
-                totalMatDays += days;
-                matPeriodsHTML += `<p class="text-gray-600 font-medium text-sm"><span class="inline-block w-4">${i+1}.</span> ${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-pink-500 font-bold ml-1">(${days}일)</span></p>`;
-                
-                if(finalMatEndDate === null || endDt > finalMatEndDate) {
-                    finalMatEndDate = endDt;
-                }
-            });
-
-            if (hasError) return;
-
-            if (totalMatDays > MAX_MAT_DAYS) {
-                alert(`출산휴가 총 일수(${totalMatDays}일)가 법정 최대 일수(${MAX_MAT_DAYS}일)를 초과했습니다. 남은 일수를 확인해주세요.`);
+            const matWarningBox = document.getElementById('matWarningBox');
+            if (!matWarningBox.classList.contains('hidden')) {
+                alert('출산휴가 일정에 법적 위반 사항이 있습니다. 붉은색 안내 메시지를 확인 후 일정을 수정해주세요.');
                 return;
             }
 
-            document.getElementById('resMatDays').innerText = totalMatDays;
-            document.getElementById('resMatDatesList').innerHTML = matPeriodsHTML;
+            const matStart = document.getElementById('matStartDate').value;
+            const matEndDisplay = document.getElementById('matEndDateDisplay');
+            const matEnd = matEndDisplay.dataset.endDate;
 
-            let returnDate = new Date(finalMatEndDate);
-            returnDate.setDate(returnDate.getDate() + 1);
+            if (!matStart || !matEnd) {
+                alert('출산휴가 시작일을 입력해주세요.');
+                return;
+            }
 
-            // 2. 육아휴직 계산부 (분할 배열 적용)
-            const parNode = document.getElementById('parResultNode');
-            const parRows = document.querySelectorAll('.par-row');
+            const startDt = new Date(matStart);
+            const endDt = new Date(matEnd);
+            let finalReturnDate = new Date(matEnd); 
+
+            // --- 날짜 겹침 방지 검증 로직 ---
+            let allRanges = [];
+            // 1. 출산휴가 추가
+            allRanges.push({ start: new Date(matStart), end: new Date(matEnd), label: '출산휴가' });
+
+            // 2. 산전/산후 육아휴직 수집
+            const preRows = document.querySelectorAll('.prenatal-par-row');
+            const postRows = document.querySelectorAll('.par-row');
+            const allParRows = [...preRows, ...postRows];
             
             let totalParDays = 0;
             let parPeriodsHTML = '';
             let finalParEndDate = null;
             let hasValidParLeave = false;
-            
-            parRows.forEach((row, i) => {
+            let hasError = false;
+
+            allParRows.forEach((row, i) => {
                 const start = row.querySelector('.par-start').value;
                 const end = row.querySelector('.par-end').value;
+                const isPrenatal = row.classList.contains('prenatal-par-row');
+                const label = isPrenatal ? '산전 육아휴직' : '산후 육아휴직';
                 
                 if (start && end) {
                     hasValidParLeave = true;
-                    const startDt = new Date(start);
-                    const endDt = new Date(end);
+                    const parStartDt = new Date(start);
+                    const parEndDt = new Date(end);
                     
-                    if (endDt < startDt) {
-                        alert(`육아휴직 ${i+1}번째 분할의 종료일이 시작일보다 빠릅니다.`);
+                    if (parEndDt < parStartDt) {
+                        alert(`${label} ${i+1}번째 분할의 종료일이 시작일보다 빠릅니다.`);
                         hasError = true; return;
                     }
 
+                    allRanges.push({ start: parStartDt, end: parEndDt, label: label });
+
                     const days = calculateDaysBetween(start, end);
                     totalParDays += days;
-                    parPeriodsHTML += `<p class="text-gray-600 font-medium text-sm"><span class="inline-block w-4">${i+1}.</span> ${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-blue-500 font-bold ml-1">(${days}일)</span></p>`;
+                    parPeriodsHTML += `<p class="text-gray-600 font-medium text-sm mb-1"><span class="inline-block w-8 text-xs bg-gray-200 rounded text-center mr-1 text-gray-700">${isPrenatal ? '산전' : '산후'}</span> ${formatDate(parStartDt)} ~ ${formatDate(parEndDt)} <span class="text-blue-500 font-bold ml-1">(${days}일)</span></p>`;
                     
-                    if(finalParEndDate === null || endDt > finalParEndDate) {
-                        finalParEndDate = endDt;
+                    if(finalParEndDate === null || parEndDt > finalParEndDate) {
+                        finalParEndDate = parEndDt;
                     }
                 } else if (start || end) {
-                     alert(`육아휴직 ${i+1}번째 분할의 날짜를 모두 입력해주세요. (사용하지 않는다면 비워두세요)`);
+                     alert(`육아휴직 항목의 날짜를 모두 입력해주세요. (사용하지 않는다면 비워두세요)`);
                      hasError = true; return;
                 }
             });
             
             if (hasError) return;
 
+            // 전체 기간 중 겹치는 구간이 있는지 체크
+            if (checkDateOverlap(allRanges)) {
+                alert("휴가 기간(출산휴가 및 산전/산후 육아휴직)이 서로 겹치는 구간이 존재합니다. 일정을 확인해주세요.");
+                return;
+            }
+
+            document.getElementById('resMatDays').innerText = MAX_MAT_DAYS;
+            document.getElementById('resMatDatesList').innerHTML = `<p class="text-gray-600 font-medium text-sm">${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-pink-500 font-bold ml-1">(${MAX_MAT_DAYS}일)</span></p>`;
+
             if (hasValidParLeave) {
-                // 육아휴직은 약정 개월 수(30일 기준)로 급여 계산 매핑
-                const parMonthsApprox = Math.round(totalParDays / 30);
-                
-                if (parMonthsApprox > MAX_PAR_MONTHS) {
-                    alert(`육아휴직 총 기간(약 ${parMonthsApprox}개월)이 법정 최대 허용 기간(${MAX_PAR_MONTHS}개월)을 초과했습니다.`);
+                let dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 365 : 547;
+                allParRows.forEach(r => {
+                    if (hasLeapDay(r.querySelector('.par-start').value, r.querySelector('.par-end').value)) {
+                        dynamicMaxDays = (MAX_PAR_MONTHS === 12) ? 366 : 548;
+                    }
+                });
+
+                if (totalParDays > dynamicMaxDays) {
+                    alert(`육아휴직 총 기간(${totalParDays}일)이 법정 최대 허용 기간(${dynamicMaxDays}일)을 초과했습니다.`);
                     return;
                 }
                 
+                const parMonthsApprox = Math.round(totalParDays / (dynamicMaxDays / MAX_PAR_MONTHS));
+
                 parNode.style.display = 'block';
                 document.getElementById('resParMonths').innerText = parMonthsApprox;
                 document.getElementById('resParDatesList').innerHTML = parPeriodsHTML;
@@ -769,21 +864,20 @@
                 const is6plus6 = document.getElementById('is6plus6').checked;
                 const isSingle = document.getElementById('isSingleParent').checked;
                 
-                // 급여 계산 함수 실행
                 const payResult = calcPayTable(salary, parMonthsApprox, is6plus6, isSingle);
                 
                 document.getElementById('payTableBody').innerHTML = payResult.rows;
                 document.getElementById('resTotalPay').innerText = `${payResult.totalPay.toLocaleString()} 원`;
                 
-                if (finalParEndDate) {
-                    returnDate = new Date(finalParEndDate);
-                    returnDate.setDate(returnDate.getDate() + 1);
+                if (finalParEndDate && finalParEndDate > finalReturnDate) {
+                    finalReturnDate = new Date(finalParEndDate);
                 }
             } else {
                 parNode.style.display = 'none';
             }
 
-            document.getElementById('resReturnDate').innerText = formatDate(returnDate);
+            finalReturnDate.setDate(finalReturnDate.getDate() + 1);
+            document.getElementById('resReturnDate').innerText = formatDate(finalReturnDate);
 
             document.getElementById('resultSection').classList.remove('hidden');
             setTimeout(() => {
@@ -794,8 +888,7 @@
         window.onload = () => {
             updateMaxMatDays();
             updateMaxParMonths();
-            addMatLeaveRow(true);
-            addParLeaveRow(true); // 육아휴직도 기본 1개 세팅
+            addParLeaveRow(true); 
         };
     </script>
 </body>
