@@ -8,7 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
-    <!-- 구글 서치 콘솔 소유권 확인 메타 태그 (여기에 복사한 태그를 넣으세요!) -->
+    <!-- 사진 저장용 라이브러리 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- 구글 서치 콘솔 소유권 확인 메타 태그 -->
     <meta name="google-site-verification" content="TovCNR20_X8X8rFXuw4ycKtQoh6CGiDh5xDWrKR1lYw" />
         
     <!-- 구글 애드센스 소유권 확인 및 자동 스크립트 -->
@@ -26,15 +29,16 @@
 </head>
 <body class="text-gray-800 antialiased min-h-screen p-4 md:p-8 flex justify-center">
 
-    <div class="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+    <!-- 캡처 영역을 위해 id="captureArea" 추가 -->
+    <div id="captureArea" class="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden pb-4">
         
         <div class="bg-blue-600 p-6 text-white text-center">
             <h1 class="text-2xl font-bold mb-2">2026년형 출산·육아휴직 통합 플래너</h1>
             <p class="text-blue-100 text-sm">달라진 1년 6개월 연장법 및 6+6 제도를 완벽 반영했습니다.</p>
         </div>
 
-        <!-- [광고 영역 1] 플래너 상단 -->
-        <div class="w-full bg-gray-50 flex justify-center border-b min-h-[90px]">
+        <!-- [광고 영역 1] 플래너 상단 (인쇄 및 캡처 시 숨김: print:hidden ad-area) -->
+        <div class="w-full bg-gray-50 flex justify-center border-b min-h-[90px] print:hidden ad-area">
             <ins class="adsbygoogle"
                  style="display:block; min-width:320px; width:100%; height:90px;"
                  data-ad-client="ca-pub-8881745451204327"
@@ -64,14 +68,14 @@
                                 <input type="checkbox" id="isTwins" class="w-5 h-5 text-blue-600 rounded" onchange="updateMaxMatDays()">
                                 <span class="text-sm font-medium">다태아(쌍둥이) 임신 (출산휴가 120일)</span>
                             </label>
-                            <button type="button" onclick="openPolicyModal('twin')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition">상세설명</button>
+                            <button type="button" onclick="openPolicyModal('twin')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition print:hidden">상세설명</button>
                         </div>
                         <div class="flex items-center justify-between">
                             <label class="flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" id="isSingleParent" class="w-5 h-5 text-blue-600 rounded" onchange="updateMaxParMonths()">
                                 <span class="text-sm font-medium">한부모 가정 특례</span>
                             </label>
-                            <button type="button" onclick="openPolicyModal('single')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition">상세설명</button>
+                            <button type="button" onclick="openPolicyModal('single')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition print:hidden">상세설명</button>
                         </div>
                     </div>
                 </div>
@@ -84,21 +88,21 @@
                                 <input type="checkbox" id="spouse3Months" class="w-5 h-5 text-blue-600 rounded" onchange="updateMaxParMonths()">
                                 <span class="text-sm text-gray-700">배우자가 육아휴직을 <b>3개월 이상</b> 사용함</span>
                             </label>
-                            <button type="button" onclick="openPolicyModal('extension')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition">상세설명</button>
+                            <button type="button" onclick="openPolicyModal('extension')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition print:hidden">상세설명</button>
                         </div>
                         <div class="flex items-center justify-between">
                             <label class="flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" id="is6plus6" class="w-5 h-5 text-blue-600 rounded">
                                 <span class="text-sm text-gray-700"><b>'6+6 부모 육아휴직제'</b> 적용 대상</span>
                             </label>
-                            <button type="button" onclick="openPolicyModal('plus6')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition">상세설명</button>
+                            <button type="button" onclick="openPolicyModal('plus6')" class="text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded font-medium transition print:hidden">상세설명</button>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- [광고 영역 2] 플래너 중간 -->
-            <div class="my-6 min-h-[90px] w-full bg-gray-50 flex justify-center">
+            <div class="my-6 min-h-[90px] w-full bg-gray-50 flex justify-center print:hidden ad-area">
                 <ins class="adsbygoogle"
                      style="display:block; min-width:320px; width:100%;"
                      data-ad-client="ca-pub-8881745451204327"
@@ -167,7 +171,7 @@
                 <div class="mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-bold text-yellow-800">🤰 임신 중(산전) 육아휴직</h3>
-                        <button onclick="addPrenatalParLeaveRow()" class="text-xs text-yellow-700 font-semibold hover:text-yellow-900 flex items-center bg-yellow-200 px-2 py-1 rounded shadow-sm">
+                        <button onclick="addPrenatalParLeaveRow()" class="text-xs text-yellow-700 font-semibold hover:text-yellow-900 flex items-center bg-yellow-200 px-2 py-1 rounded shadow-sm print:hidden">
                             <i class="ri-add-circle-line mr-1"></i> 산전 휴가 추가
                         </button>
                     </div>
@@ -193,10 +197,10 @@
                 </div>
 
                 <div class="flex justify-between items-center mt-3">
-                    <button onclick="addParLeaveRow()" class="text-sm text-blue-600 font-semibold hover:text-blue-800 flex items-center">
+                    <button onclick="addParLeaveRow()" class="text-sm text-blue-600 font-semibold hover:text-blue-800 flex items-center print:hidden">
                         <i class="ri-add-circle-line mr-1"></i> 산후 휴가 분할 추가
                     </button>
-                    <div class="text-sm font-medium text-right">
+                    <div class="text-sm font-medium text-right ml-auto">
                         <div class="mb-1">
                             총 사용: <span class="text-blue-600 font-bold"><span id="totalParMonthsUsed">0.0</span>개월</span>
                             <span class="text-xs text-gray-500">(<span id="totalParDaysUsed">0</span>일)</span>
@@ -216,7 +220,7 @@
                 </p>
             </section>
 
-            <button onclick="calculateAll()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition duration-200 text-lg mt-6">
+            <button id="calcBtn" onclick="calculateAll()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition duration-200 text-lg mt-6 print:hidden">
                 나의 맞춤형 휴가 플랜 생성하기
             </button>
 
@@ -269,15 +273,19 @@
                     </div>
                 </div>
                 
-                <div class="flex justify-center mt-6">
-                    <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg shadow transition">
-                        <i class="ri-printer-line mr-1"></i> 플랜 인쇄/PDF 저장
+                <!-- 인쇄 및 이미지 저장 버튼 영역 -->
+                <div id="actionButtons" class="flex flex-col sm:flex-row justify-center gap-3 mt-6 print:hidden">
+                    <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg shadow transition flex justify-center items-center">
+                        <i class="ri-printer-line mr-1"></i> PDF/인쇄
+                    </button>
+                    <button onclick="saveAsImage()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold py-2 px-6 rounded-lg shadow transition flex justify-center items-center">
+                        <i class="ri-image-line mr-1"></i> 사진으로 저장
                     </button>
                 </div>
             </section>
 
-            <!-- [광고 영역 3] 플래너 하단 (결과창 아래) -->
-            <div class="mt-8 border-t pt-6 min-h-[90px] w-full bg-gray-50 flex justify-center rounded-lg">
+            <!-- [광고 영역 3] 플래너 하단 -->
+            <div class="mt-8 border-t pt-6 min-h-[90px] w-full bg-gray-50 flex justify-center rounded-lg print:hidden ad-area">
                 <ins class="adsbygoogle"
                      style="display:block; min-width:320px; width:100%;"
                      data-ad-client="ca-pub-8881745451204327"
@@ -528,7 +536,7 @@
                 <div class="w-16 text-center mt-5">
                     <span class="text-sm font-bold text-blue-600 par-days-display">0</span><span class="text-xs text-gray-500">일</span>
                 </div>
-                <button onclick="removePrenatalParLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200"><i class="ri-close-line"></i></button>
+                <button onclick="removePrenatalParLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200 print:hidden"><i class="ri-close-line"></i></button>
             `;
             container.appendChild(row);
             updateParMaxCheckboxes();
@@ -603,7 +611,7 @@
                 <div class="flex-1">
                     <div class="flex justify-between items-center mb-1">
                         <label class="text-xs text-gray-500 block">종료일</label>
-                        <label class="text-[10px] flex items-center text-blue-600 cursor-pointer font-bold par-max-wrap">
+                        <label class="text-[10px] flex items-center text-blue-600 cursor-pointer font-bold par-max-wrap print:hidden">
                             <input type="checkbox" class="mr-1 par-max-cb" onchange="applyMaxParDays(this)"> 최대사용
                         </label>
                     </div>
@@ -612,7 +620,7 @@
                 <div class="w-16 text-center mt-5">
                     <span class="text-sm font-bold text-blue-600 par-days-display">0</span><span class="text-xs text-gray-500">일</span>
                 </div>
-                ${parLeaveCount > 1 ? `<button onclick="removeParLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200"><i class="ri-close-line"></i></button>` : ''}
+                ${parLeaveCount > 1 ? `<button onclick="removeParLeaveRow('${row.id}')" class="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-200 print:hidden"><i class="ri-close-line"></i></button>` : ''}
             `;
             container.appendChild(row);
             
@@ -649,7 +657,6 @@
             });
         }
 
-        // 핵심: 달력(역법) 기준에 맞춰 개월 수를 정확히 더하는 로직 적용
         function applyMaxParDays(checkbox) {
             const row = checkbox.closest('.par-row, .prenatal-par-row');
             const startInput = row.querySelector('.par-start');
@@ -679,7 +686,6 @@
                 if (remainingMonths > 0) {
                     const startDt = new Date(startInput.value);
                     const endDt = new Date(startDt);
-                    // 단순 일수 더하기가 아닌 달력 기준(역법) 개월 수 더하기 적용
                     endDt.setMonth(endDt.getMonth() + Math.round(remainingMonths));
                     endDt.setDate(endDt.getDate() - 1);
                     endInput.value = formatDateForInput(endDt);
@@ -740,7 +746,6 @@
             noticeEl.classList.remove('hidden');
             noticeEl.className = 'text-xs text-indigo-600 font-bold mt-1';
 
-            // --- 역법(달력) 기준 보정: 사용 개월 수가 거의 딱 맞으면 남은 일수를 0으로 강제 일치 ---
             if (Math.abs(totalUsedMonths - MAX_PAR_MONTHS) < 0.1) {
                 dynamicMaxDays = totalUsedDays; 
                 noticeEl.innerText = `✨ 역법(달력) 기준 ${MAX_PAR_MONTHS}개월 완벽 산정 완료`;
@@ -935,7 +940,6 @@
             document.getElementById('resMatDays').innerText = MAX_MAT_DAYS;
             document.getElementById('resMatDatesList').innerHTML = `<p class="text-gray-600 font-medium text-sm">${formatDate(startDt)} ~ ${formatDate(endDt)} <span class="text-pink-500 font-bold ml-1">(${MAX_MAT_DAYS}일)</span></p>`;
 
-            // parResultNode 버그 픽스 완료
             const parResultNode = document.getElementById('parResultNode');
 
             if (hasValidParLeave) {
@@ -979,6 +983,52 @@
             setTimeout(() => {
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
             }, 100);
+        }
+
+        // --- 사진으로 저장 기능 로직 ---
+        async function saveAsImage() {
+            const captureArea = document.getElementById('captureArea');
+            const adAreas = document.querySelectorAll('.ad-area');
+            const actionButtons = document.getElementById('actionButtons');
+            const calcBtn = document.getElementById('calcBtn');
+            const originalBtnText = actionButtons.innerHTML;
+
+            try {
+                // 1. 캡처 전: 버튼 상태 변경 및 불필요한 요소 숨김 (광고, 불필요한 UI 등)
+                actionButtons.innerHTML = '<span class="text-indigo-600 font-bold py-2"><i class="ri-loader-4-line animate-spin inline-block"></i> 이미지를 저장 중입니다...</span>';
+                calcBtn.style.display = 'none';
+                
+                adAreas.forEach(el => {
+                    el.style.display = 'none';
+                });
+
+                // 약간의 지연(UI 업데이트 반영 시간)
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // 2. html2canvas 실행
+                const canvas = await html2canvas(captureArea, {
+                    scale: 2, // 고해상도 저장
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                // 3. 이미지 다운로드 트리거
+                const link = document.createElement('a');
+                link.download = `출산육아휴직_플래너_${formatDate(new Date())}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+            } catch (err) {
+                console.error("이미지 저장 실패:", err);
+                alert("이미지 저장 중 오류가 발생했습니다.");
+            } finally {
+                // 4. 원래 상태로 복구
+                adAreas.forEach(el => {
+                    el.style.display = '';
+                });
+                actionButtons.innerHTML = originalBtnText;
+                calcBtn.style.display = '';
+            }
         }
 
         window.onload = () => {
